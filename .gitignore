@@ -1,0 +1,234 @@
+# Arquivos de documentação gerados automaticamente
+HELP.md
+
+# Diretórios de build Maven
+target/
+.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+# Diretórios de build Gradle
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+.gradle/
+
+### Spring Boot ###
+# Arquivos de configuração sensíveis (descomente se necessário)
+# application-*.properties
+# application-*.yml
+# *.env
+
+### Java ###
+# Arquivos compilados
+*.class
+*.jar
+*.war
+*.ear
+*.nar
+hs_err_pid*
+replay_pid*
+
+# Logs
+*.log
+logs/
+spring.log
+
+# Arquivos temporários
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+### IDEs ###
+
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+### IntelliJ IDEA ###
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+### VS Code ###
+.vscode/
+*.code-workspace
+
+### Eclipse ###
+.metadata
+bin/
+tmp/
+*.tmp
+*.bak
+*.swp
+*~.nib
+local.properties
+.settings/
+.loadpath
+.recommenders
+
+# External tool builders
+.externalToolBuilders/
+
+# Locally stored "Eclipse launch configurations"
+*.launch
+
+# PyDev specific (Python IDE for Eclipse)
+*.pydevproject
+
+# CDT-specific (C/C++ Development Tooling)
+.cproject
+
+# CDT- autotools
+.autotools
+
+# Java annotation processor (APT)
+.factorypath
+
+# PDT-specific (PHP Development Tools)
+.buildpath
+
+# sbteclipse plugin
+.target
+
+# Tern plugin
+.tern-project
+
+# TeXlipse plugin
+.texlipse
+
+# STS (Spring Tool Suite)
+.springBeans
+
+# Code Recommenders
+.recommenders/
+
+# Annotation Processing
+.apt_generated/
+.apt_generated_test/
+
+# Scala IDE specific (Scala & Java IDE for Eclipse)
+.cache-main
+.scala_dependencies
+.worksheet
+
+### Sistema Operacional ###
+
+### Windows ###
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
+
+### macOS ###
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+### Linux ###
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+### Banco de Dados ###
+# H2 Database
+*.db
+*.trace.db
+*.lock.db
+
+# Outros bancos
+*.sqlite
+*.sqlite3
+
+### Segurança ###
+# Chaves e certificados
+*.pem
+*.key
+*.p12
+*.jks
+*.keystore
+*.truststore
+
+# Variáveis de ambiente
+.env
+.env.local
+.env.production
+.env.test
+
+### Dependências Node.js (caso use ferramentas frontend) ###
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+yarn.lock
+
+### Outros ###
+# Arquivos de backup
+*.bak
+*.backup
+*.old
+
+# Arquivos de relatórios
+reports/
+*.html
+coverage/
+
+# Arquivos de testes
+test-output/
+.allure/
+allure-results/
+
+# Cache do Maven
+.m2/repository/
+
+# Cache local do projeto
+.cache/
+*.pid
+
+# Docker
+*.dockerignore
+docker-compose.override.yml
+
+# Arquivos específicos do projeto InovaTech
+# (adicione conforme necessário)
+# config/local.properties
+# scripts/local/
