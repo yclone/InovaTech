@@ -25,7 +25,7 @@ Projeto para apresentação e teste InovaTech - Uma aplicação Spring Boot 3.5.
 
 ### 1. Clone o repositório
 ```bash
-git clone <url-do-repositorio>
+git clone https://github.com/yclone/InovaTech.git
 cd InovaTech
 ```
 
