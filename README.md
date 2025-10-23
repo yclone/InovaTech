@@ -23,13 +23,20 @@ Projeto para apresentação e teste InovaTech - Uma aplicação Spring Boot 3.5.
 
 ## 🚀 Como Executar o Projeto
 
+> **⚠️ Importante**: Todos os comandos Maven devem ser executados a partir da pasta `src`, onde estão localizados o `pom.xml` e os arquivos Maven wrapper.
+
 ### 1. Clone o repositório
 ```bash
 git clone https://github.com/yclone/InovaTech.git
 cd InovaTech
 ```
 
-### 2. Execute a aplicação
+### 2. Navegue para a pasta src
+```bash
+cd src
+```
+
+### 3. Execute a aplicação
 
 **Usando Maven Wrapper (Recomendado):**
 ```bash
@@ -48,7 +55,7 @@ cd InovaTech
 mvn spring-boot:run
 ```
 
-### 3. Acesse a aplicação
+### 4. Acesse a aplicação
 
 A aplicação estará disponível em: **http://localhost:5000**
 
@@ -75,9 +82,12 @@ Para acessar o console do banco H2:
 
 ## 📁 Estrutura do Projeto
 
+> **🔄 Estrutura Reorganizada**: O projeto foi reorganizado para manter todo o conteúdo da aplicação Spring Boot dentro da pasta `src`, incluindo o `pom.xml` e arquivos Maven wrapper. A pasta `tests` na raiz foi preservada para testes separados.
+
 ```
 InovaTech/
-├── src/
+├── src/                              # 📁 Pasta principal da aplicação
+│   ├── .mvn/                        # Configurações Maven wrapper
 │   ├── main/
 │   │   ├── java/
 │   │   │   └── br/com/InovaTech/InovaTech/
@@ -92,7 +102,10 @@ InovaTech/
 │   │   └── resources/
 │   │       ├── application.properties  # Configurações da aplicação
 │   │       └── static/                # Arquivos estáticos
-│   └── test/                          # Testes unitários
+│   ├── test/                          # Testes unitários
+│   ├── pom.xml                       # 📋 Configurações do Maven
+│   ├── mvnw                          # Maven wrapper (Unix/Linux)
+│   └── mvnw.cmd                      # Maven wrapper (Windows)
 ├── tests/
 │   └── tests-integration/             # Módulo de testes avançados
 │       ├── pom.xml                   # Dependências para testes
@@ -103,8 +116,10 @@ InovaTech/
 │               ├── apiTest/          # Testes de API
 │               ├── apiIntegration/   # Testes de integração
 │               └── e2eTest/          # Testes End-to-End
-├── pom.xml                           # Configurações do Maven
-└── README.md                         # Este arquivo
+├── target/                           # Build artifacts (gerado pelo Maven)
+├── compose.yaml                      # Docker Compose
+├── HELP.md                          # Ajuda do Spring Boot
+└── README.md                        # Este arquivo
 ```
 
 ## ⚙️ Configurações Principais
@@ -132,6 +147,9 @@ O projeto possui uma estrutura completa de testes em múltiplas camadas:
 #### 🔹 **Testes Unitários** (`src/test/`)
 Testes básicos das funcionalidades isoladas:
 ```bash
+# Navegue para a pasta src primeiro
+cd src
+
 # Executar testes unitários
 .\mvnw.cmd test
 
@@ -274,17 +292,25 @@ Acesse **http://localhost:5001/swagger-ui.html** para:
 
 ### Executar em modo de desenvolvimento
 ```bash
+# Navegue para a pasta src primeiro
+cd src
 .\mvnw.cmd spring-boot:run -Dspring-boot.run.profiles=dev
 ```
 
 ### Build da aplicação
 ```bash
+# Navegue para a pasta src primeiro
+cd src
 .\mvnw.cmd clean package
 ```
 
 ### Executar JAR gerado
 ```bash
+# A partir da pasta src
 java -jar target/InovaTech-0.0.1-SNAPSHOT.jar
+
+# Ou da pasta raiz
+java -jar src/target/InovaTech-0.0.1-SNAPSHOT.jar
 ```
 
 ## 📋 Funcionalidades Implementadas

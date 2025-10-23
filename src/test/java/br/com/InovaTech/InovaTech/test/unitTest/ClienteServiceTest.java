@@ -3,7 +3,7 @@ package br.com.InovaTech.InovaTech.test.unitTest;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
 import br.com.InovaTech.InovaTech.model.entity.Cliente;
-import br.com.InovaTech.InovaTech.repository.impl.MailingRepositoryImpl;
+import br.com.InovaTech.InovaTech.repository.MailingRepository;
 import br.com.InovaTech.InovaTech.repository.ClienteRepository;
 import br.com.InovaTech.InovaTech.service.impl.ClienteServiceImpl;
 import br.com.InovaTech.InovaTech.exceptions.BusinessException;
@@ -18,15 +18,22 @@ import org.mockito.BDDMockito;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.orm.jpa.JpaSystemException;
+import org.springframework.dao.DataAccessException;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.catchThrowable;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.doThrow;
 
 @ExtendWith(MockitoExtension.class)
 class ClienteServiceTest {
@@ -37,7 +44,7 @@ class ClienteServiceTest {
     ClienteRepository repository;
 
     @Mock
-    MailingRepositoryImpl mailingRepository;
+    MailingRepository mailingRepository;
 
     @BeforeEach
     public void setUp() {
@@ -97,7 +104,12 @@ class ClienteServiceTest {
 
         BDDMockito.when(repository.existsByUsuario(usuario)).thenReturn(true);
 
+        // EXECUCAO
+        Throwable exception = catchThrowable(() -> service.save(cliente));
+
         // VALIDACAO
+        assertThat(exception).isInstanceOf(BusinessException.class);
+        Mockito.verify(repository, Mockito.times(1)).existsByUsuario(usuario);
         Mockito.verify(repository, Mockito.never()).save(cliente);
     }
 
@@ -126,7 +138,7 @@ class ClienteServiceTest {
         Cliente cliente = ClienteMockFactory.novoClientePauloJorge();
         String usuario = cliente.getUsuario();
 
-        BDDMockito.when(repository.existsByUsuario(usuario)).thenThrow(new JpaSystemException(new InternalErrorException("Erro ao acessar o banco de dados")));
+        BDDMockito.when(repository.existsByUsuario(usuario)).thenThrow(new DataAccessException("Database error") {});
 
         // EXECUCAO
         Throwable exception = catchThrowable(() -> service.save(cliente));
@@ -146,7 +158,7 @@ class ClienteServiceTest {
         Cliente cliente = ClienteMockFactory.novoClientePauloJorge();
         String usuario = cliente.getUsuario();
 
-        BDDMockito.when(repository.save(cliente)).thenThrow(new JpaSystemException(new RuntimeException("Database is offline")));
+        BDDMockito.when(repository.save(cliente)).thenThrow(new DataAccessException("Database is offline") {});
 
         // EXECUCAO
         Throwable exception = catchThrowable(() -> service.save(cliente));
@@ -202,7 +214,7 @@ class ClienteServiceTest {
 
         // PREPARACAO
         long id = 1;
-        BDDMockito.when(repository.findById(id)).thenThrow(new JpaSystemException(new InternalErrorException("Erro ao acessar o banco de dados")));
+        BDDMockito.when(repository.findById(id)).thenThrow(new DataAccessException("Database error") {});
 
         // EXECUCAO
         Throwable exception = catchThrowable(() -> service.getById(id));
@@ -219,7 +231,7 @@ class ClienteServiceTest {
     void getAll_GetAllClienteError_ReturnsInternalErrorExceptionWithMessageErroAoConsultarBancoDeDados() {
 
         // PREPARACAO
-        BDDMockito.when(repository.findAll()).thenThrow(new JpaSystemException(new InternalErrorException("Erro ao acessar o banco de dados")));
+        BDDMockito.when(repository.findAll()).thenThrow(new DataAccessException("Database error") {});
 
         // EXECUCAO
         Throwable exception = catchThrowable(() -> service.getList());

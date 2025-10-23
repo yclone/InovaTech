@@ -18,7 +18,7 @@ public class LoadProperties {
     public static String URI_STS;
     public static PropertiesUtils PROPS;
 
-    public static final String ROTA_CLIENTES = "grupoa_clientes/";
+    public static final String ROTA_CLIENTES = "clientes";
     public static final String ROTA_MAIL = "emails/";
 
     @BeforeAll
