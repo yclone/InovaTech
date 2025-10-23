@@ -13,10 +13,6 @@ public class ConfigurationApplication implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
-        if (Boolean.parseBoolean(props.getPrintgoldenticket())){
-            PrintGoldenTiket.printGoldenTicket();
-        }
-
         this.props = props;
     }
 }

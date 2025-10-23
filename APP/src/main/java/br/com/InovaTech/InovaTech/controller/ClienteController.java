@@ -3,6 +3,7 @@ package br.com.InovaTech.InovaTech.controller;
 import jakarta.validation.Valid;
 
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
@@ -10,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import br.com.InovaTech.InovaTech.model.dto.ClienteDTO;
 import br.com.InovaTech.InovaTech.model.entity.Cliente;
 import br.com.InovaTech.InovaTech.service.impl.ClienteServiceImpl;
+import br.com.InovaTech.InovaTech.repository.ClienteRepository;
 
 import org.springframework.web.server.ResponseStatusException;
 
@@ -30,16 +32,22 @@ public class ClienteController {
 
 	private ClienteServiceImpl service;
 	private ModelMapper modelMapper;
+	private ClienteRepository repository;
 
 	@InitBinder("cliente")
 	protected void initClienteBinder(WebDataBinder binder) {
 		binder.setDisallowedFields("Id");
 	}
 
-	public ClienteController(ClienteServiceImpl service, ModelMapper modelMapper) {
-		
-		this.service = service;
+	public ClienteController(ModelMapper modelMapper, ClienteRepository repository) {
 		this.modelMapper = modelMapper;
+		this.repository = repository;
+	}
+	
+	// Setter para injeção opcional do service (usado apenas em alguns métodos)
+	@Autowired(required = false)
+	public void setService(ClienteServiceImpl service) {
+		this.service = service;
 	}
 
 	@PostMapping("/clientes")
@@ -54,7 +62,7 @@ public class ClienteController {
 	})
 	public ClienteDTO createCliente(@RequestBody @Valid ClienteDTO cliente) {
 		Cliente entity = modelMapper.map(cliente, Cliente.class);
-		entity = service.save(entity);
+		entity = repository.save(entity);
 		return modelMapper.map(entity, ClienteDTO.class);
 	}
 
