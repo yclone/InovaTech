@@ -67,29 +67,44 @@ class ClienteControllerTest {
 	void post_NewCliente_UsingRepositoryMock() throws Exception {
 
 	    // PREPARACAO
+	    // Cria um objeto Cliente mock para ser usado como entrada do método save
 		Cliente clienteToSave = ClienteMockFactory.novoClientePauloJorge();
+		// Cria um objeto Cliente mock que simula o retorno do repository após salvar (com ID gerado)
 		Cliente clienteAfterSave = ClienteMockFactory.clienteCadastradoPauloJorgeId9();
 
-		// Mock para verificar se o cliente já existe (retorna false para permitir cadastro)
+		// Configura o mock do repository.existsByUsuario para retornar false
+		// Isso simula que o cliente NÃO existe no banco, permitindo o cadastro
 		BDDMockito.given(repository.existsByUsuario(Mockito.anyString())).willReturn(false);
 		
+		// Configura o mock do repository.save para retornar o clienteAfterSave
+		// Simula o comportamento do banco que adiciona um ID ao salvar
 	    BDDMockito.given(repository.save(Mockito.any(Cliente.class))).willReturn(clienteAfterSave);
 	    
-	    // Mock para o envio de email (não lança exceção)
-	    BDDMockito.willDoNothing().given(mailingRepository).sendEmail(Mockito.anyString());
+	    // Configura o mock do mailingRepository.sendEmail para retornar null
+	    // Simula o envio de email com sucesso (sem lançar exceção)
+	    BDDMockito.given(mailingRepository.sendEmail(Mockito.anyString())).willReturn(null);
 	    
-	    // Configurar o ModelMapper mock para fazer as conversões
+	    // Cria um ClienteDTO que será enviado no corpo da requisição POST
 	    ClienteDTO clienteDtoToCreate = ClienteDtoMockFactory.novoClientePauloJorge();
+	    // Cria um ClienteDTO que representa o resultado esperado da API
 		ClienteDTO expectedResult = ClienteDtoMockFactory.clienteCadastradoPauloJorgeId9();
 		
+		// Configura o mock do ModelMapper para converter ClienteDTO em Cliente
+		// Quando o controller chamar modelMapper.map(dto, Cliente.class), retorna clienteToSave
 		BDDMockito.given(modelMapper.map(Mockito.any(ClienteDTO.class), Mockito.eq(Cliente.class)))
 		    .willReturn(clienteToSave);
+		// Configura o mock do ModelMapper para converter Cliente em ClienteDTO
+		// Quando o controller chamar modelMapper.map(entity, ClienteDTO.class), retorna expectedResult
 		BDDMockito.given(modelMapper.map(Mockito.any(Cliente.class), Mockito.eq(ClienteDTO.class)))
 		    .willReturn(expectedResult);
 
+		// Converte o objeto ClienteDTO em JSON para enviar no corpo da requisição
 	    String json = objectMapper.writeValueAsString(clienteDtoToCreate);
 
 	    // EXECUCAO
+	    // Executa uma requisição POST para o endpoint /clientes
+	    // Define o Content-Type como JSON e envia o JSON no corpo
+	    // Obtém a resposta HTTP completa (incluindo status, headers e body)
 	    MockHttpServletResponse response = mvc.perform(MockMvcRequestBuilders.post(CLIENTE_API)
 			.contentType(MediaType.APPLICATION_JSON)
 			.content(json))
@@ -97,15 +112,23 @@ class ClienteControllerTest {
 			.getResponse();
 
 	    // VALIDACAO
+	    // Verifica se o status code da resposta é 201 (CREATED)
 	    assertEquals(HttpStatus.CREATED.value(), response.getStatus());
 	    
+	    // Extrai o corpo da resposta (JSON) como String, usando UTF-8
 	    String jsonResponse = response.getContentAsString(StandardCharsets.UTF_8);
+	    // Converte o JSON de resposta de volta para um objeto ClienteDTO
 	    ClienteDTO resultDto = objectMapper.readValue(jsonResponse, ClienteDTO.class);
 	    
+	    // Valida que o primeiro nome no resultado é "Paulo"
 	    assertEquals("Paulo", resultDto.getPrimeiroNome());
+	    // Valida que o último nome no resultado é "Jorge"
 	    assertEquals("Jorge", resultDto.getUltimoNome());
+	    // Valida que o usuário (email) no resultado é "paulo.jorge@email.com.br"
 	    assertEquals("paulo.jorge@email.com.br", resultDto.getUsuario());
+	    // Valida que a cidade no resultado é "São Paulo"
 	    assertEquals("São Paulo", resultDto.getCidade());
+	    // Valida que o estado no resultado é "SP"
 	    assertEquals("SP", resultDto.getEstado());
 	}
 
