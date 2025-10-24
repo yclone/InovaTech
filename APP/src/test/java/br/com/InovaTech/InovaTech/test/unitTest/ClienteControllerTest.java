@@ -79,16 +79,24 @@ class ClienteControllerTest {
 
 	    String json = objectMapper.writeValueAsString(clienteDtoToCreate);
 
-	    // EXECUCAO E VALIDACAO
-	    mvc.perform(MockMvcRequestBuilders.post(CLIENTE_API)
+	    // EXECUCAO
+	    MockHttpServletResponse response = mvc.perform(MockMvcRequestBuilders.post(CLIENTE_API)
 			.contentType(MediaType.APPLICATION_JSON)
 			.content(json))
-			.andExpect(status().isCreated())
-			.andExpect(jsonPath("$.PrimeiroNome", equalTo("Paulo")))
-			.andExpect(jsonPath("$.UltimoNome", equalTo("Jorge")))
-			.andExpect(jsonPath("$.Usuario", equalTo("paulo.jorge@email.com.br")))
-			.andExpect(jsonPath("$.Cidade", equalTo("São Paulo")))
-			.andExpect(jsonPath("$.Estado", equalTo("SP")));
+			.andReturn()
+			.getResponse();
+
+	    // VALIDACAO
+	    assertEquals(HttpStatus.CREATED.value(), response.getStatus());
+	    
+	    String jsonResponse = response.getContentAsString(StandardCharsets.UTF_8);
+	    ClienteDTO resultDto = objectMapper.readValue(jsonResponse, ClienteDTO.class);
+	    
+	    assertEquals("Paulo", resultDto.getPrimeiroNome());
+	    assertEquals("Jorge", resultDto.getUltimoNome());
+	    assertEquals("paulo.jorge@email.com.br", resultDto.getUsuario());
+	    assertEquals("São Paulo", resultDto.getCidade());
+	    assertEquals("SP", resultDto.getEstado());
 	}
 
 }
