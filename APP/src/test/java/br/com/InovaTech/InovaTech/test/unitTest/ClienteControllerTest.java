@@ -4,6 +4,7 @@ import br.com.InovaTech.InovaTech.exceptions.InternalErrorException;
 import br.com.InovaTech.InovaTech.model.dto.ClienteDTO;
 import br.com.InovaTech.InovaTech.model.entity.Cliente;
 import br.com.InovaTech.InovaTech.repository.ClienteRepository;
+import br.com.InovaTech.InovaTech.repository.MailingRepository;
 import br.com.InovaTech.InovaTech.test.helpers.ClienteDtoMockFactory;
 import br.com.InovaTech.InovaTech.test.helpers.ClienteMockFactory;
 
@@ -50,6 +51,9 @@ class ClienteControllerTest {
     
     @MockBean
     org.modelmapper.ModelMapper modelMapper;
+    
+    @MockBean
+    MailingRepository mailingRepository;
 
 	@Autowired
 	MockMvc mvc;
@@ -66,7 +70,13 @@ class ClienteControllerTest {
 		Cliente clienteToSave = ClienteMockFactory.novoClientePauloJorge();
 		Cliente clienteAfterSave = ClienteMockFactory.clienteCadastradoPauloJorgeId9();
 
+		// Mock para verificar se o cliente já existe (retorna false para permitir cadastro)
+		BDDMockito.given(repository.existsByUsuario(Mockito.anyString())).willReturn(false);
+		
 	    BDDMockito.given(repository.save(Mockito.any(Cliente.class))).willReturn(clienteAfterSave);
+	    
+	    // Mock para o envio de email (não lança exceção)
+	    BDDMockito.willDoNothing().given(mailingRepository).sendEmail(Mockito.anyString());
 	    
 	    // Configurar o ModelMapper mock para fazer as conversões
 	    ClienteDTO clienteDtoToCreate = ClienteDtoMockFactory.novoClientePauloJorge();

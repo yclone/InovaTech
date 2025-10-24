@@ -12,8 +12,11 @@ import br.com.InovaTech.InovaTech.model.dto.ClienteDTO;
 import br.com.InovaTech.InovaTech.model.entity.Cliente;
 import br.com.InovaTech.InovaTech.service.impl.ClienteServiceImpl;
 import br.com.InovaTech.InovaTech.repository.ClienteRepository;
+import br.com.InovaTech.InovaTech.repository.MailingRepository;
+import br.com.InovaTech.InovaTech.exceptions.BusinessException;
 
 import org.springframework.web.server.ResponseStatusException;
+import com.fasterxml.jackson.core.JsonProcessingException;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -33,15 +36,17 @@ public class ClienteController {
 	private ClienteServiceImpl service;
 	private ModelMapper modelMapper;
 	private ClienteRepository repository;
+	private MailingRepository mailingRepository;
 
 	@InitBinder("cliente")
 	protected void initClienteBinder(WebDataBinder binder) {
 		binder.setDisallowedFields("Id");
 	}
 
-	public ClienteController(ModelMapper modelMapper, ClienteRepository repository) {
+	public ClienteController(ModelMapper modelMapper, ClienteRepository repository, MailingRepository mailingRepository) {
 		this.modelMapper = modelMapper;
 		this.repository = repository;
+		this.mailingRepository = mailingRepository;
 	}
 	
 	// Setter para injeção opcional do service (usado apenas em alguns métodos)
@@ -62,8 +67,21 @@ public class ClienteController {
 	})
 	public ClienteDTO createCliente(@RequestBody @Valid ClienteDTO cliente) {
 		Cliente entity = modelMapper.map(cliente, Cliente.class);
-		entity = repository.save(entity);
-		return modelMapper.map(entity, ClienteDTO.class);
+		
+		try {
+			if (repository.existsByUsuario(entity.getUsuario())){
+				throw new BusinessException("Cliente já cadastrado!");
+			}
+			Cliente clienteSalvo = repository.save(entity);
+			try {
+				mailingRepository.sendEmail(clienteSalvo.getUsuario());
+			} catch (JsonProcessingException e) {
+				throw new BusinessException("erro ao enviar email!");
+			}
+			return modelMapper.map(clienteSalvo, ClienteDTO.class);
+		} catch (BusinessException e) {
+			throw e;
+		}
 	}
 
 	@GetMapping("/clientes")
