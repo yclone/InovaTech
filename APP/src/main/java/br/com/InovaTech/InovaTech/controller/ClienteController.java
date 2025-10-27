@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 import br.com.InovaTech.InovaTech.model.dto.ClienteDTO;
 import br.com.InovaTech.InovaTech.model.entity.Cliente;
-import br.com.InovaTech.InovaTech.service.impl.ClienteServiceImpl;
+import br.com.InovaTech.InovaTech.service.ClienteService;
 
 import org.springframework.web.server.ResponseStatusException;
 
@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
 @Tag(name = "Clientes", description = "API para gerenciamento de clientes")
 public class ClienteController {
 
-	private ClienteServiceImpl service;
+	private ClienteService service;
 	private ModelMapper modelMapper;
 
 	@InitBinder("cliente")
@@ -36,8 +36,7 @@ public class ClienteController {
 		binder.setDisallowedFields("Id");
 	}
 
-	public ClienteController(ClienteServiceImpl service, ModelMapper modelMapper) {
-		
+	public ClienteController(ClienteService service, ModelMapper modelMapper) {
 		this.service = service;
 		this.modelMapper = modelMapper;
 	}
