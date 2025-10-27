@@ -75,4 +75,17 @@ public class ClienteServiceImpl implements ClienteService {
 			throw new InternalErrorException("Erro ao acessar o banco de dados", e);
 		}
 	}
+
+	@Override
+	public String deleteById(long id) {
+		try {
+			if (!repository.existsById(id)){
+				throw new BusinessException("Cliente não encontrado!");
+			}
+			repository.deleteById(id);
+			return "Cliente deletado com sucesso!";
+		} catch (DataAccessException e) {
+			throw new InternalErrorException("Erro ao acessar o banco de dados", e);
+		}
+	}
 }

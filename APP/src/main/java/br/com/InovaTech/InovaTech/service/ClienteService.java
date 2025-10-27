@@ -9,6 +9,8 @@ public interface ClienteService {
 
 	Cliente save(Cliente any);
 
+	String deleteById(long id);
+	
 	List <Cliente> getList();
 
 	Optional <Cliente> getById(long id);

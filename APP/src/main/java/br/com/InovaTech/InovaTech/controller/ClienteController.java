@@ -117,4 +117,17 @@ public class ClienteController {
 			.map(cliente -> modelMapper.map(cliente, ClienteDTO.class))
 			.orElseThrow( () -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 	}
+
+	@DeleteMapping("/clientes/{id}")
+	@ResponseStatus(HttpStatus.OK)
+	@ApiResponses(value = {
+		@ApiResponse(responseCode = "200", description = "Cliente deletado com sucesso"),
+		@ApiResponse(responseCode = "404", description = "Cliente não encontrado"),
+		@ApiResponse(responseCode = "500", description = "Erro interno do servidor")
+	})
+	public String deleteCliente(
+			@Parameter(description = "ID do cliente a ser deletado", required = true)
+			@PathVariable long id) {
+		return service.deleteById(id);
+	}
 }
