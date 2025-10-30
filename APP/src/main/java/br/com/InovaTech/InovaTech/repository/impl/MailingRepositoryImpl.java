@@ -21,7 +21,8 @@ public class MailingRepositoryImpl implements MailingRepository {
         System.out.println("✅ Simulando envio de email para: " + email);
         
         return ResponseEmailDTO.builder()
-                .response("Email enviado com sucesso para: " + email)
+                .sucesso(true)
+                .mensagem("Email enviado com sucesso para: " + email)
                 .build();
     }
 }

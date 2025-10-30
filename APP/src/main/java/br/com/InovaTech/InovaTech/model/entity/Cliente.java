@@ -36,6 +36,9 @@ public class Cliente {
 	@Email(message = "Formato de e-mail incorreto")
 	private String usuario;
 
+	@NotBlank(message = "A senha é obrigatória")
+	private String senha;
+
 	@NotBlank(message = "A cidade é obrigatória")
 	private String cidade;
 

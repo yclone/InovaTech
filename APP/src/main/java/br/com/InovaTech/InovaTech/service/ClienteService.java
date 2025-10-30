@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Optional;
 
 import br.com.InovaTech.InovaTech.model.entity.Cliente;
+import br.com.InovaTech.InovaTech.model.dto.LoginRequestDTO;
+import br.com.InovaTech.InovaTech.model.dto.LoginResponseDTO;
 
 public interface ClienteService {
 
@@ -12,4 +14,6 @@ public interface ClienteService {
 	List <Cliente> getList();
 
 	Optional <Cliente> getById(long id);
+
+	LoginResponseDTO login(LoginRequestDTO loginRequest);
 }

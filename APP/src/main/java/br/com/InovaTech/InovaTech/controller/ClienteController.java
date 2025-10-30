@@ -8,6 +8,8 @@ import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
 
 import br.com.InovaTech.InovaTech.model.dto.ClienteDTO;
+import br.com.InovaTech.InovaTech.model.dto.LoginRequestDTO;
+import br.com.InovaTech.InovaTech.model.dto.LoginResponseDTO;
 import br.com.InovaTech.InovaTech.model.entity.Cliente;
 import br.com.InovaTech.InovaTech.service.ClienteService;
 
@@ -68,7 +70,11 @@ public class ClienteController {
 	})
 	public List<ClienteDTO> getCliente () {
 		List<Cliente> clienteList = this.service.getList();
-		return clienteList.stream().map(cliente -> modelMapper.map(cliente, ClienteDTO.class)).collect(Collectors.toList());
+		return clienteList.stream().map(cliente -> {
+			ClienteDTO dto = modelMapper.map(cliente, ClienteDTO.class);
+			dto.setSenha(null); // Remove a senha da resposta por segurança
+			return dto;
+		}).collect(Collectors.toList());
 	}
 
 
@@ -87,7 +93,25 @@ public class ClienteController {
 			@PathVariable long id) {
 		return service
 			.getById(id)
-			.map(cliente -> modelMapper.map(cliente, ClienteDTO.class))
+			.map(cliente -> {
+				ClienteDTO dto = modelMapper.map(cliente, ClienteDTO.class);
+				dto.setSenha(null); // Remove a senha da resposta por segurança
+				return dto;
+			})
 			.orElseThrow( () -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+	}
+
+	@PostMapping("/login")
+	@ResponseStatus(HttpStatus.OK)
+	@Operation(summary = "Realizar login", 
+			   description = "Autentica um cliente usando email e senha")
+	@ApiResponses(value = {
+		@ApiResponse(responseCode = "200", description = "Resposta do login processada",
+				content = @Content(schema = @Schema(implementation = LoginResponseDTO.class))),
+		@ApiResponse(responseCode = "400", description = "Dados inválidos fornecidos"),
+		@ApiResponse(responseCode = "500", description = "Erro interno do servidor")
+	})
+	public LoginResponseDTO login(@RequestBody @Valid LoginRequestDTO loginRequest) {
+		return service.login(loginRequest);
 	}
 }

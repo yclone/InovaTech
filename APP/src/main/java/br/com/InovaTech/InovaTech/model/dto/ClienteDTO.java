@@ -42,6 +42,11 @@ public class ClienteDTO {
 	@Schema(description = "E-mail do cliente (usado como usuário)", example = "joao.silva@email.com", required = true)
 	private String usuario;
 
+	@JsonProperty("Senha")
+	@NotBlank(message = "A senha é obrigatória")
+	@Schema(description = "Senha do cliente", example = "minhasenha123", required = true)
+	private String senha;
+
 	@JsonProperty("Cidade")
 	@NotBlank(message = "A cidade é obrigatória")
 	@Schema(description = "Cidade onde o cliente reside", example = "São Paulo", required = true)

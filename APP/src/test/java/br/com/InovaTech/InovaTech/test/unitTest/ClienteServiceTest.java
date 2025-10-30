@@ -9,6 +9,8 @@ import br.com.InovaTech.InovaTech.service.impl.ClienteServiceImpl;
 import br.com.InovaTech.InovaTech.exceptions.BusinessException;
 import br.com.InovaTech.InovaTech.exceptions.InternalErrorException;
 import br.com.InovaTech.InovaTech.test.helpers.ClienteMockFactory;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.modelmapper.ModelMapper;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -46,9 +48,15 @@ class ClienteServiceTest {
     @Mock
     MailingRepository mailingRepository;
 
+    @Mock
+    PasswordEncoder passwordEncoder;
+
+    @Mock
+    ModelMapper modelMapper;
+
     @BeforeEach
     public void setUp() {
-        this.service = new ClienteServiceImpl(repository, mailingRepository);
+        this.service = new ClienteServiceImpl(repository, mailingRepository, passwordEncoder, modelMapper);
     }
 
 
