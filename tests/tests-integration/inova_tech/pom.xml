@@ -62,26 +62,7 @@
         </configuration>
       </plugin>
 
-      <!-- Build Helper Plugin - Para adicionar source directories customizados -->
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>build-helper-maven-plugin</artifactId>
-        <version>3.6.0</version>
-        <executions>
-          <execution>
-            <id>add-test-source</id>
-            <phase>generate-test-sources</phase>
-            <goals>
-              <goal>add-test-source</goal>
-            </goals>
-            <configuration>
-              <sources>
-                <source>src/test</source>
-              </sources>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
+
 
       <!-- Maven Surefire Plugin - Para executar testes -->
       <plugin>
