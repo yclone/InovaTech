@@ -44,7 +44,12 @@
     <groupId>org.json</groupId>
     <artifactId>json</artifactId>
     <version>20231013</version>
-</dependency>
+    </dependency>
+    <dependency>
+        <groupId>com.github.javafaker</groupId>
+        <artifactId>javafaker</artifactId>
+        <version>1.0.2</version>
+    </dependency>
   </dependencies>
 
   <build>
@@ -62,26 +67,7 @@
         </configuration>
       </plugin>
 
-      <!-- Build Helper Plugin - Para adicionar source directories customizados -->
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>build-helper-maven-plugin</artifactId>
-        <version>3.6.0</version>
-        <executions>
-          <execution>
-            <id>add-test-source</id>
-            <phase>generate-test-sources</phase>
-            <goals>
-              <goal>add-test-source</goal>
-            </goals>
-            <configuration>
-              <sources>
-                <source>src/test/integration</source>
-              </sources>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
+
 
       <!-- Maven Surefire Plugin - Para executar testes -->
       <plugin>
