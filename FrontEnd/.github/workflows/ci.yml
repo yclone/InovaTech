@@ -1,0 +1,122 @@
+name: 🚀 Build and Deploy
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - 'FrontEnd/**'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'FrontEnd/**'
+
+jobs:
+  build-and-test:
+    name: 🔨 Build and Test
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: ./FrontEnd
+
+    strategy:
+      matrix:
+        node-version: [16.x, 18.x, 20.x]
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 📦 Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+          cache-dependency-path: FrontEnd/package-lock.json
+
+      - name: 📋 Install dependencies
+        run: npm ci
+
+      - name: 🔍 Check for vulnerabilities
+        run: npm audit --audit-level moderate
+
+      - name: 🏗️ Build project
+        run: npm run build
+
+      - name: 📱 Test build output
+        run: |
+          ls -la dist/
+          test -f dist/index.html
+          test -d dist/assets/
+
+      - name: 📊 Upload build artifacts
+        if: matrix.node-version == '18.x'
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-files
+          path: FrontEnd/dist/
+          retention-days: 30
+
+  lint-and-format:
+    name: 🧹 Lint and Format Check
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: ./FrontEnd
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: FrontEnd/package-lock.json
+
+      - name: 📋 Install dependencies
+        run: npm ci
+
+      - name: ✨ Check Prettier formatting
+        run: |
+          npx prettier --check "src/**/*.{js,css,html}" || {
+            echo "❌ Code formatting issues found!"
+            echo "💡 Run 'npx prettier --write .' to fix"
+            exit 1
+          }
+
+  security-check:
+    name: 🔒 Security Check
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: ./FrontEnd
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: FrontEnd/package-lock.json
+
+      - name: 📋 Install dependencies
+        run: npm ci
+
+      - name: 🛡️ Run security audit
+        run: npm audit --audit-level high
+
+      - name: 🔍 Check for known vulnerabilities
+        run: |
+          npx audit-ci --config .audit-ci.json || {
+            echo "❌ Security vulnerabilities found!"
+            echo "💡 Review and fix security issues"
+            exit 1
+          }
+        continue-on-error: true

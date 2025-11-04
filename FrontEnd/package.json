@@ -1,0 +1,40 @@
+{
+  "name": "inovatech-frontend",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Frontend moderno para o sistema de gestão de clientes InovaTech",
+  "keywords": [
+    "frontend",
+    "javascript",
+    "vite",
+    "spa",
+    "inovatech"
+  ],
+  "author": "InovaTech Team",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yclone/InovaTech.git"
+  },
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
+  },
+  "scripts": {
+    "dev": "vite --host",
+    "build": "vite build",
+    "preview": "vite preview --host",
+    "serve": "npm run preview",
+    "clean": "rm -rf dist node_modules/.vite",
+    "setup": "npm install",
+    "start": "npm run dev"
+  },
+  "devDependencies": {
+    "vite": "^7.1.7"
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not dead"
+  ]
+}
