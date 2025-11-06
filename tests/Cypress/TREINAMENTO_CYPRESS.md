@@ -67,7 +67,7 @@ npm install cypress --save-dev
 ```bash
 npx cypress open
 ```
-> Selecione a opção de E2E Testing para e crie e selecione continue no final da pagina para criar os arquivos do Cypress
+> Selecione a opção de E2E Testing, selecione continue no final da pagina para criar os arquivos do Cypress
 
 > Isso criará a estrutura de pastas: `cypress/e2e`, `cypress/support`, `cypress.config.js`
 
@@ -102,9 +102,12 @@ module.exports = defineConfig({
 #### **Passo 1:** Criar estrutura de arquivos
 ```bash
 # Criar arquivos de teste
-cypress/e2e/ui-tests.cy.js      # Testes de interface
-cypress/e2e/api-tests.cy.js     # Testes de API
-cypress/e2e/integration.cy.js   # Testes híbridos
+cypress/e2e/ui-tests.cy.js          # Testes de interface
+cypress/e2e/api-tests.cy.js         # Testes de API
+cypress/e2e/integration.cy.js       # Testes de integração com envio de email
+cypress/e2e/health-check.cy.js      # Testes para validar se aplicação rodou
+cypress/e2e/integration_bff.cy.js   # Testes de integração Back e Front end
+cypress/e2e/performance.cy.js       # Testes de Performance
 ```
 
 #### **Passo 2:** Teste inicial de conectividade
@@ -256,10 +259,22 @@ describe('InovaTech - UI Tests (Interface Web)', () => {
 
 ### 2.2 ATIVIDADE: Login via Interface
 
+#### **Criar arquivo:** `cypress/e2e/exercicio.cy.js`
+
 #### **Adicionar teste para fazer Login em um novo arquivo:**
 
 ```javascript
 describe('Página de Login', () => {
+    
+    // Definir dados do usuário de teste
+    const testUser = {
+      primeiroNome: 'TestUser',
+      ultimoNome: 'Login',
+      email: `login.test.${Date.now()}@test.com`,
+      senha: 'login123test',
+      cidade: 'São Paulo',
+      estado: 'SP'
+    };
     
     // Criar usuário via API antes dos testes de login
     before(() => {
@@ -680,7 +695,7 @@ describe('InovaTech - Performance Tests (Desempenho da API)', () => {
 
 Os testes híbridos combinam interações de UI com validações diretas na API, oferecendo cobertura completa.
 
-#### **Criar arquivo:** `cypress/e2e/integration.cy.js`
+#### **Criar arquivo:** `cypress/e2e/integration_bff.cy.js`
 
 ```javascript
 describe('InovaTech - Integration Tests (UI + API)', () => {
@@ -894,6 +909,9 @@ npx cypress run --browser chrome
 
 # Executar em paralelo (se configurado)
 npx cypress run --record --parallel
+
+#instale o mochawesome para poder gerar relatorios
+npm install --save-dev mochawesome
 
 # Gerar relatórios detalhados
 npx cypress run --reporter mochawesome --reporter-options reportDir=reports,overwrite=false,html=false,json=true
