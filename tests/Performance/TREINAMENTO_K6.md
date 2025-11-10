@@ -1,15 +1,67 @@
 # 🚀 TREINAMENTO K6 - GUIA PRÁTICO COMPLETO
 
 ## 📚 Índice
-1. [Introdução ao K6](#introdução-ao-k6)
-2. [Instalação e Setup](#instalação-e-setup)
-3. [Testes Básicos - InovaTech API](#testes-básicos---inovatech-api)
-4. [Conceitos Fundamentais](#conceitos-fundamentais)
-5. [Tipos de Testes de Performance Avançados](#tipos-de-testes-de-performance-avançados)
-6. [Exercícios Práticos Avançados](#exercícios-práticos-avançados)
-7. [Análise de Resultados](#análise-de-resultados)
-8. [Boas Práticas](#boas-práticas)
-9. [Troubleshooting](#troubleshooting)
+1. [Estrutura do Projeto de Testes de Performance](#estrutura-do-projeto-de-testes-de-performance)
+2. [Introdução ao K6](#introdução-ao-k6)
+3. [Instalação e Setup](#instalação-e-setup)
+4. [Testes Básicos - InovaTech API](#testes-básicos---inovatech-api)
+5. [Conceitos Fundamentais](#conceitos-fundamentais)
+6. [Tipos de Testes de Performance Avançados](#tipos-de-testes-de-performance-avançados)
+7. [Exercícios Práticos Avançados](#exercícios-práticos-avançados)
+8. [Análise de Resultados](#análise-de-resultados)
+9. [Boas Práticas](#boas-práticas)
+10. [Troubleshooting](#troubleshooting)
+
+---
+
+## 📂 Estrutura do Projeto de Testes de Performance
+
+Antes de mergulharmos no K6, é crucial entender como nosso projeto de testes está organizado. Uma estrutura bem definida promove a reutilização de código, facilita a manutenção e torna os testes mais legíveis e eficientes.
+
+A pasta `tests/Performance` segue a seguinte organização:
+
+```
+tests/Performance/
+├── config/
+│   └── environments.js      # URLs, configurações de ambiente e thresholds
+├── utils/
+│   ├── data-generator.js   # Funções para gerar dados de teste dinâmicos
+│   ├── helpers.js          # Funções utilitárias para validações e reuso
+│   └── thresholds.js       # Limites de qualidade (passa/falha) específicos
+├── tests/
+│   ├── api-crud-test.js    # Testes de operações CRUD na API
+│   ├── stress-test.js      # Teste de estresse
+│   └── ...                 # Outros arquivos de teste
+└── TREINAMENTO_K6.md       # Este guia que você está lendo
+```
+
+### **Pasta `config`**
+
+Esta pasta centraliza as configurações que podem variar entre diferentes ambientes (local, desenvolvimento, produção).
+
+#### `environments.js`
+- **Propósito**: Define as URLs base da API e do frontend para cada ambiente.
+- **Como funciona**: Ele exporta um objeto `environments` com as configurações de `local`, `dev`, `staging`, e `production`. O script seleciona o ambiente correto com base na variável de ambiente `ENVIRONMENT` passada na execução do K6. Se nenhuma for passada, `local` é usado como padrão.
+- **Vantagem**: Permite executar os mesmos scripts de teste em diferentes ambientes sem modificar o código, apenas mudando a variável de ambiente. Ex: `k6 run -e ENVIRONMENT=staging tests/health-check.js`.
+
+### **Pasta `utils`**
+
+Esta pasta contém módulos com código reutilizável para auxiliar na criação dos testes, seguindo o princípio DRY (Don't Repeat Yourself).
+
+#### `data-generator.js`
+- **Propósito**: Criar dados de teste realistas e dinâmicos.
+- **O que faz**: Exporta funções como `generateUser()`, `generateLoginData()`, e `generateInvalidUser()`. Isso garante que cada execução do teste utilize dados novos, evitando conflitos como a tentativa de cadastrar um email que já existe.
+
+#### `helpers.js`
+- **Propósito**: Agrupar funções de apoio que são usadas em múltiplos scripts.
+- **O que faz**: Contém funções como `checkResponse()` para padronizar as validações de status e tempo de resposta, `randomSleep()` para simular pausas mais realistas entre as ações do usuário, e `logInfo()` e `logError()` para um logging mais estruturado.
+
+#### `thresholds.js`
+- **Propósito**: Centralizar os critérios de sucesso (passa/falha) dos testes.
+- **O que faz**: Define thresholds (limites) para diferentes tipos de teste (`load`, `stress`, `spike`, etc.) e para operações específicas (`create`, `read`, `update`, `delete`). Por exemplo, define que 95% das requisições de `read` devem ser mais rápidas que 1 segundo.
+- **Vantagem**: Facilita a manutenção dos critérios de qualidade e permite a criação de políticas de performance consistentes em toda a suíte de testes.
+
+Usar essa estrutura organizada desde o início é uma boa prática que economiza tempo e melhora a qualidade dos seus testes de performance.
 
 ---
 
@@ -107,6 +159,73 @@ mvn spring-boot:run
 # Verificar se API está respondendo
 curl http://localhost:5000/clientes
 ```
+
+### **Criando seu Primeiro Teste de Performance (Passo a Passo)**
+
+Antes de testarmos todos os endpoints da nossa API, vamos criar um teste do zero para entender a estrutura básica de um script K6. Nosso objetivo será fazer um teste de carga simples no endpoint que lista os clientes.
+
+**Passo 1: Crie um novo arquivo**
+
+Crie um arquivo chamado `meu-primeiro-teste.js` na pasta `tests/Performance`.
+
+**Passo 2: Escreva o código do teste**
+
+Copie e cole o seguinte código no seu arquivo:
+
+```javascript
+// 1. Importar os módulos necessários do K6
+import http from 'k6/http';
+import { check, sleep } from 'k6';
+
+// 2. Configurar as opções do teste
+export const options = {
+  vus: 3,        // Número de usuários virtuais (Virtual Users)
+  duration: '30s' // Duração total do teste
+};
+
+// 3. Definir a função principal (o que cada VU vai executar)
+export default function() {
+  // 4. Fazer uma requisição GET para o endpoint de clientes
+  const response = http.get('http://localhost:5000/clientes');
+  
+  // 5. Verificar se a resposta está correta (Checks)
+  check(response, {
+    'Status da requisição é 200 (OK)': (r) => r.status === 200,
+    'Tempo de resposta é menor que 800ms': (r) => r.timings.duration < 800,
+  });
+  
+  // 6. Pausar por 1 segundo antes da próxima iteração
+  sleep(1);
+}
+```
+
+**Passo 3: Entendendo cada linha do script**
+
+1.  **`import http from 'k6/http';`**: Importa o cliente HTTP do K6, que nos permite fazer requisições web (GET, POST, etc.).
+2.  **`import { check, sleep } from 'k6';`**:
+    *   `check`: É como um `assert` em testes unitários. Ele verifica se uma condição é verdadeira, mas **não para o teste** se a verificação falhar. Apenas registra o sucesso ou a falha.
+    *   `sleep`: Pausa a execução do VU por um determinado tempo (em segundos). Isso é crucial para simular o comportamento de um usuário real, que não clica em tudo instantaneamente.
+3.  **`export const options = { ... };`**: Aqui definimos a configuração do nosso teste.
+    *   `vus: 3`: Simula **3 usuários virtuais** acessando a aplicação simultaneamente.
+    *   `duration: '30s'`: O teste irá rodar por um total de **30 segundos**. Durante esse tempo, os 3 VUs executarão a função `default` repetidamente.
+4.  **`export default function() { ... }`**: Este é o coração do seu teste. É o código que cada VU executará em um loop contínuo durante os 30 segundos de teste.
+5.  **`const response = http.get(...)`**: Executa uma requisição do tipo GET para a URL `http://localhost:5000/clientes` e armazena a resposta na variável `response`.
+6.  **`check(response, { ... });`**: Realiza nossas validações.
+    *   `'Status da requisição é 200 (OK)': (r) => r.status === 200`: Verifica se o código de status da resposta HTTP é 200, o que indica sucesso.
+    *   `'Tempo de resposta é menor que 800ms': (r) => r.timings.duration < 800`: Verifica se a requisição demorou menos de 800 milissegundos para ser concluída.
+7.  **`sleep(1);`**: Faz com que o VU espere por **1 segundo** antes de iniciar a próxima iteração do loop. Isso é chamado de "think time" (tempo de pensamento) e ajuda a criar uma carga mais realista.
+
+**Passo 4: Execute o teste**
+
+Abra o terminal na pasta `tests/Performance` e execute o comando:
+
+```bash
+k6 run meu-primeiro-teste.js
+```
+
+Ao final da execução, você verá um resumo dos resultados, incluindo os tempos de resposta e se suas verificações (`checks`) passaram.
+
+Agora que você entendeu a anatomia de um teste básico, vamos explorar os endpoints da API InovaTech com mais detalhes.
 
 ### **Teste 1: GET /clientes - Listar Usuários**
 
