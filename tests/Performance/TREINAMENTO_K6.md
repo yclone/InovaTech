@@ -68,13 +68,14 @@ k6 version
 # Verificar se K6 foi instalado corretamente
 k6 version
 
----
-
+```
 
 #### **Passo 4:** Inicializar npm
 ```bash
 npm init -y
 ```
+---
+
 
 ## 🚀 Testes Básicos - InovaTech API
 
