@@ -14,57 +14,6 @@
 
 ---
 
-## 📂 Estrutura do Projeto de Testes de Performance
-
-Antes de mergulharmos no K6, é crucial entender como nosso projeto de testes está organizado. Uma estrutura bem definida promove a reutilização de código, facilita a manutenção e torna os testes mais legíveis e eficientes.
-
-A pasta `tests/Performance` segue a seguinte organização:
-
-```
-tests/Performance/
-├── config/
-│   └── environments.js      # URLs, configurações de ambiente e thresholds
-├── utils/
-│   ├── data-generator.js   # Funções para gerar dados de teste dinâmicos
-│   ├── helpers.js          # Funções utilitárias para validações e reuso
-│   └── thresholds.js       # Limites de qualidade (passa/falha) específicos
-├── tests/
-│   ├── api-crud-test.js    # Testes de operações CRUD na API
-│   ├── stress-test.js      # Teste de estresse
-│   └── ...                 # Outros arquivos de teste
-└── TREINAMENTO_K6.md       # Este guia que você está lendo
-```
-
-### **Pasta `config`**
-
-Esta pasta centraliza as configurações que podem variar entre diferentes ambientes (local, desenvolvimento, produção).
-
-#### `environments.js`
-- **Propósito**: Define as URLs base da API e do frontend para cada ambiente.
-- **Como funciona**: Ele exporta um objeto `environments` com as configurações de `local`, `dev`, `staging`, e `production`. O script seleciona o ambiente correto com base na variável de ambiente `ENVIRONMENT` passada na execução do K6. Se nenhuma for passada, `local` é usado como padrão.
-- **Vantagem**: Permite executar os mesmos scripts de teste em diferentes ambientes sem modificar o código, apenas mudando a variável de ambiente. Ex: `k6 run -e ENVIRONMENT=staging tests/health-check.js`.
-
-### **Pasta `utils`**
-
-Esta pasta contém módulos com código reutilizável para auxiliar na criação dos testes, seguindo o princípio DRY (Don't Repeat Yourself).
-
-#### `data-generator.js`
-- **Propósito**: Criar dados de teste realistas e dinâmicos.
-- **O que faz**: Exporta funções como `generateUser()`, `generateLoginData()`, e `generateInvalidUser()`. Isso garante que cada execução do teste utilize dados novos, evitando conflitos como a tentativa de cadastrar um email que já existe.
-
-#### `helpers.js`
-- **Propósito**: Agrupar funções de apoio que são usadas em múltiplos scripts.
-- **O que faz**: Contém funções como `checkResponse()` para padronizar as validações de status e tempo de resposta, `randomSleep()` para simular pausas mais realistas entre as ações do usuário, e `logInfo()` e `logError()` para um logging mais estruturado.
-
-#### `thresholds.js`
-- **Propósito**: Centralizar os critérios de sucesso (passa/falha) dos testes.
-- **O que faz**: Define thresholds (limites) para diferentes tipos de teste (`load`, `stress`, `spike`, etc.) e para operações específicas (`create`, `read`, `update`, `delete`). Por exemplo, define que 95% das requisições de `read` devem ser mais rápidas que 1 segundo.
-- **Vantagem**: Facilita a manutenção dos critérios de qualidade e permite a criação de políticas de performance consistentes em toda a suíte de testes.
-
-Usar essa estrutura organizada desde o início é uma boa prática que economiza tempo e melhora a qualidade dos seus testes de performance.
-
----
-
 ## 🎯 Introdução ao K6
 
 ### O que é K6?
@@ -109,16 +58,6 @@ scoop install k6
 brew install k6
 ```
 
-#### **Linux:**
-```bash
-# Ubuntu/Debian
-sudo gpg -k
-sudo gpg --no-default-keyring --keyring /usr/share/keyrings/k6-archive-keyring.gpg --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys C5AD17C747E3415A3642D57D77C6C491D6AC1D69
-echo "deb [signed-by=/usr/share/keyrings/k6-archive-keyring.gpg] https://dl.k6.io/deb stable main" | sudo tee /etc/apt/sources.list.d/k6.list
-sudo apt-get update
-sudo apt-get install k6
-```
-
 ### Passo 2: Verificar Instalação
 ```bash
 k6 version
@@ -129,22 +68,13 @@ k6 version
 # Verificar se K6 foi instalado corretamente
 k6 version
 
-# Teste básico de conectividade
-k6 run --vus 1 --duration 10s - <<EOF
-import http from 'k6/http';
-export default function() {
-  http.get('https://httpbin.org/get');
-}
-EOF
-```
-
-### Passo 4: Setup do Projeto InovaTech (Automático)
-```powershell
-# Execute na pasta tests/Performance/
-.\setup.ps1
-```
-
 ---
+
+
+#### **Passo 4:** Inicializar npm
+```bash
+npm init -y
+```
 
 ## 🚀 Testes Básicos - InovaTech API
 
@@ -743,6 +673,61 @@ k6 run test-jornada-completa.js
 - ✅ 4 requisições por jornada completa
 - ✅ http_req_duration variado (GET rápido, POST mais lento)
 - ✅ Todas as verificações devem passar
+
+---
+
+## 📂 Estrutura do Projeto de Testes de Performance
+
+Antes de mergulharmos no K6, é crucial entender como nosso projeto de testes está organizado. Uma estrutura bem definida promove a reutilização de código, facilita a manutenção e torna os testes mais legíveis e eficientes.
+
+A pasta `tests/Performance` segue a seguinte organização:
+
+```
+tests/Performance/
+├── config/
+│   └── environments.js      # URLs, configurações de ambiente e thresholds
+├── utils/
+│   ├── data-generator.js   # Funções para gerar dados de teste dinâmicos
+│   ├── helpers.js          # Funções utilitárias para validações e reuso
+│   └── thresholds.js       # Limites de qualidade (passa/falha) específicos
+├── tests/
+│   ├── api-crud-test.js    # Testes de operações CRUD na API
+│   ├── stress-test.js      # Teste de estresse
+│   └── ...                 # Outros arquivos de teste
+└── TREINAMENTO_K6.md       # Este guia que você está lendo
+```
+
+### **Pasta `config`**
+
+Esta pasta centraliza as configurações que podem variar entre diferentes ambientes (local, desenvolvimento, produção).
+
+#### `environments.js`
+- **Propósito**: Define as URLs base da API e do frontend para cada ambiente.
+- **Como funciona**: Ele exporta um objeto `environments` com as configurações de `local`, `dev`, `staging`, e `production`. O script seleciona o ambiente correto com base na variável de ambiente `ENVIRONMENT` passada na execução do K6. Se nenhuma for passada, `local` é usado como padrão.
+- **Vantagem**: Permite executar os mesmos scripts de teste em diferentes ambientes sem modificar o código, apenas mudando a variável de ambiente. Ex: `k6 run -e ENVIRONMENT=staging tests/health-check.js`.
+
+### **Pasta `utils`**
+
+Esta pasta contém módulos com código reutilizável para auxiliar na criação dos testes, seguindo o princípio DRY (Don't Repeat Yourself).
+
+#### `data-generator.js`
+- **Propósito**: Criar dados de teste realistas e dinâmicos.
+- **O que faz**: Exporta funções como `generateUser()`, `generateLoginData()`, e `generateInvalidUser()`. Isso garante que cada execução do teste utilize dados novos, evitando conflitos como a tentativa de cadastrar um email que já existe.
+
+#### `helpers.js`
+- **Propósito**: Agrupar funções de apoio que são usadas em múltiplos scripts.
+- **O que faz**: Contém funções como `checkResponse()` para padronizar as validações de status e tempo de resposta, `randomSleep()` para simular pausas mais realistas entre as ações do usuário, e `logInfo()` e `logError()` para um logging mais estruturado.
+
+#### `thresholds.js`
+- **Propósito**: Centralizar os critérios de sucesso (passa/falha) dos testes.
+- **O que faz**: Define thresholds (limites) para diferentes tipos de teste (`load`, `stress`, `spike`, etc.) e para operações específicas (`create`, `read`, `update`, `delete`). Por exemplo, define que 95% das requisições de `read` devem ser mais rápidas que 1 segundo.
+- **Vantagem**: Facilita a manutenção dos critérios de qualidade e permite a criação de políticas de performance consistentes em toda a suíte de testes.
+
+Usar essa estrutura organizada desde o início é uma boa prática que economiza tempo e melhora a qualidade dos seus testes de performance.
+
+
+---
+
 
 ### **Executando Todos os Testes Básicos**
 
