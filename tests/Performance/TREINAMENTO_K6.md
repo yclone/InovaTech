@@ -76,7 +76,6 @@ npm init -y
 ```
 ---
 
-
 ## 🚀 Testes Básicos - InovaTech API
 
 Antes de mergulharmos nos conceitos avançados, vamos começar com testes simples e práticos dos endpoints da API InovaTech. Certifique-se de que a API está rodando em `http://localhost:5000`.
