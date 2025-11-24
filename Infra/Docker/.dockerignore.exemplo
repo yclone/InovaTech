@@ -1,0 +1,71 @@
+# Arquivos e diretórios a serem ignorados no build do Docker
+# Isso acelera o build e reduz o tamanho do contexto
+
+# Diretório de build do Maven
+target/
+!target/InovaTech-*.jar
+
+# Diretórios Git
+.git
+.gitignore
+.gitattributes
+
+# IDEs
+.idea/
+.vscode/
+.settings/
+*.iml
+*.iws
+*.ipr
+.project
+.classpath
+
+# Arquivos do sistema operacional
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log
+logs/
+
+# Arquivos temporários
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+# Documentação (não necessária na imagem)
+*.md
+docs/
+README*
+LICENSE*
+CONTRIBUTING*
+
+# Arquivos de configuração local
+.env
+.env.local
+*.local
+
+# Diretórios de teste
+test-results/
+coverage/
+
+# Node modules (se houver frontend integrado)
+node_modules/
+npm-debug.log
+
+# Arquivos Docker
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# Maven wrapper jar (já incluído em .mvn)
+.mvn/wrapper/maven-wrapper.jar
+
+# Outros
+*.class
+*.jar
+*.war
+*.ear
