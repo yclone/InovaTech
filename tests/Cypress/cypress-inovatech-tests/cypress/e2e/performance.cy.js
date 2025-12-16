@@ -18,7 +18,7 @@ describe('InovaTech - Performance Tests (Desempenho da API)', () => {
       const requests = [];
       
       // Criar 5 requisições simultâneas
-      for (let i = 0; i < 5; i++) {
+      for (let i = 0; i < 50; i++) {
         requests.push(
           cy.request('GET', `${apiUrl}/clientes`)
         );
