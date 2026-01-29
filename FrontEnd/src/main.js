@@ -297,21 +297,21 @@ function renderLogin() {
         <form id="login-form">
           <div class="form-group">
             <label for="usuario">E-mail</label>
-            <input type="email" id="usuario" name="usuario" required>
+            <input type="email" id="usuario" name="usuario" data-testid="usuario" required>
           </div>
           
           <div class="form-group">
             <label for="senha">Senha</label>
-            <input type="password" id="senha" name="senha" required>
+            <input type="password" id="senha" name="senha" data-testid="senha" required>
           </div>
           
-          <button type="submit" class="btn btn-primary" id="login-btn">
+          <button type="submit" class="btn btn-primary" id="login-btn" data-testid="login-button">
             Entrar
           </button>
         </form>
         
         <div class="text-center mt-1">
-          <a href="/register" class="link" data-link>Não tem uma conta? Cadastre-se</a>
+          <a href="/register" class="link" data-testid="register-link" data-link>Não tem uma conta? Cadastre-se</a>
         </div>
       </div>
     </div>

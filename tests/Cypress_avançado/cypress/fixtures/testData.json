@@ -1,0 +1,29 @@
+{
+  "email": "teste@example.com",
+  "password": "senha123",
+  "name": "Usuário Teste",
+  "users": [
+    {
+      "username": "admin",
+      "password": "admin123",
+      "role": "admin"
+    },
+    {
+      "username": "user",
+      "password": "user123",
+      "role": "user"
+    }
+  ],
+  "products": [
+    {
+      "name": "Produto Teste 1",
+      "description": "Descrição do produto teste 1",
+      "price": 100.00
+    },
+    {
+      "name": "Produto Teste 2",
+      "description": "Descrição do produto teste 2",
+      "price": 200.00
+    }
+  ]
+}

@@ -31,4 +31,8 @@ public class LoginResponseDTO {
     @JsonProperty("Cliente")
     @Schema(description = "Dados do cliente logado (apenas se sucesso for true)")
     private ClienteDTO cliente;
+
+    @JsonProperty("SessionId")
+    @Schema(description = "ID da sessão do usuário (usado para manter login)")
+    private String sessionId;
 }

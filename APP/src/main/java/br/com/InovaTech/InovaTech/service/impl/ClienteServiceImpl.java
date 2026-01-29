@@ -122,5 +122,4 @@ public class ClienteServiceImpl implements ClienteService {
 		} catch (DataAccessException e) {
 			throw new InternalErrorException("Erro ao acessar o banco de dados", e);
 		}
-	}
-}
+	}}

@@ -1,0 +1,38 @@
+{
+  "name": "cypress-avancado-cucumber",
+  "version": "1.0.0",
+  "description": "Projeto de testes Cypress com Cucumber e Page Objects",
+  "main": "index.js",
+  "scripts": {
+    "test": "cypress run",
+    "test:headed": "cypress run --headed",
+    "test:chrome": "cypress run --browser chrome",
+    "test:firefox": "cypress run --browser firefox",
+    "test:edge": "cypress run --browser edge",
+    "open": "cypress open",
+    "test:tags": "cypress run --env tags=",
+    "test:smoke": "cypress run --env tags=@smoke",
+    "test:regression": "cypress run --env tags=@regression",
+    "report": "node cypress/reports/merge-reports.js"
+  },
+  "keywords": [
+    "cypress",
+    "cucumber",
+    "bdd",
+    "page-objects",
+    "e2e",
+    "testing"
+  ],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "cypress": "^13.6.0",
+    "@badeball/cypress-cucumber-preprocessor": "^20.0.0",
+    "@bahmutov/cypress-esbuild-preprocessor": "^2.2.0",
+    "multiple-cucumber-html-reporter": "^3.6.0",
+    "mochawesome": "^7.1.4",
+    "mochawesome-merge": "^4.3.0",
+    "mochawesome-report-generator": "^6.2.0"
+  }
+}
