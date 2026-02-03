@@ -1,0 +1,16 @@
+# Volumes persistentes
+grafana-data/
+prometheus-data/
+loki-data/
+tempo-data/
+
+# Logs locais
+logs/**/*.log
+logs/**/*.log.*
+
+# Keep folders
+!logs/spring-boot/.gitkeep
+!logs/nodejs/.gitkeep
+
+# Arquivos temporários do Docker
+.env
