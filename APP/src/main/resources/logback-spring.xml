@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <!-- Propriedades da aplicação -->
+    <springProperty scope="context" name="appName" source="spring.application.name"/>
+    
+    <!-- ========================================
+         CONSOLE APPENDER (Para desenvolvimento)
+         ======================================== -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <includeCallerData>true</includeCallerData>
+            <customFields>{"application":"${appName}","environment":"dev","tier":"backend"}</customFields>
+            <includeMdcKeyName>traceId</includeMdcKeyName>
+            <includeMdcKeyName>spanId</includeMdcKeyName>
+        </encoder>
+    </appender>
+
+    <!-- ========================================
+         BACKEND FILE APPENDER (Para Loki coletar)
+         ======================================== -->
+    <appender name="BACKEND_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>../infra/logs/spring-boot/backend.log</file>
+        
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>../infra/logs/spring-boot/backend.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>7</maxHistory>
+            <totalSizeCap>1GB</totalSizeCap>
+        </rollingPolicy>
+        
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <includeCallerData>false</includeCallerData>
+            <customFields>{"application":"${appName}","environment":"dev","tier":"backend"}</customFields>
+            <includeMdcKeyName>traceId</includeMdcKeyName>
+            <includeMdcKeyName>spanId</includeMdcKeyName>
+        </encoder>
+    </appender>
+
+    <!-- ========================================
+         FRONTEND FILE APPENDER (Logs recebidos do frontend)
+         ======================================== -->
+    <appender name="FRONTEND_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>../infra/logs/spring-boot/frontend.log</file>
+        
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>../infra/logs/spring-boot/frontend.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>7</maxHistory>
+            <totalSizeCap>1GB</totalSizeCap>
+        </rollingPolicy>
+        
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <includeCallerData>false</includeCallerData>
+            <customFields>{"application":"${appName}","environment":"dev","tier":"frontend"}</customFields>
+        </encoder>
+    </appender>
+
+    <!-- ========================================
+         LOGGERS - Níveis por pacote
+         ======================================== -->
+    
+    <!-- Logger específico para logs do frontend -->
+    <logger name="FRONTEND" level="DEBUG" additivity="false">
+        <appender-ref ref="FRONTEND_FILE"/>
+        <appender-ref ref="CONSOLE"/>
+    </logger>
+    
+    <!-- Logger da aplicação backend -->
+    <logger name="br.com.InovaTech" level="DEBUG" additivity="false">
+        <appender-ref ref="BACKEND_FILE"/>
+        <appender-ref ref="CONSOLE"/>
+    </logger>
+    </logger>
+    
+    <!-- Spring Framework (reduzir verbosidade) -->
+    <logger name="org.springframework" level="INFO"/>
+    <logger name="org.springframework.web" level="INFO"/>
+    <logger name="org.springframework.security" level="INFO"/>
+    
+    <!-- Hibernate (SQL queries) -->
+    <logger name="org.hibernate.SQL" level="DEBUG"/>
+    <logger name="org.hibernate.type.descriptor.sql.BasicBinder" level="TRACE"/>
+    
+    <!-- Root logger (padrão para tudo) -->
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="FILE"/>
+    </root>
+</configuration>

@@ -10,9 +10,9 @@ clients:
 
 scrape_configs:
   # ========================================
-  # Spring Boot Logs (será configurado no Módulo 2)
+  # Spring Boot Backend Logs
   # ========================================
-  - job_name: spring-boot-logs
+  - job_name: spring-boot-backend
     static_configs:
       - targets:
           - localhost
@@ -20,7 +20,8 @@ scrape_configs:
           job: spring-boot
           application: inovatech-backend
           environment: dev
-          __path__: /logs/spring-boot/*.log
+          tier: backend
+          __path__: /logs/spring-boot/backend*.log
     pipeline_stages:
       # Parse JSON logs do Spring Boot (com Logback)
       - json:
@@ -28,14 +29,17 @@ scrape_configs:
             timestamp: timestamp
             level: level
             thread: thread
-            logger: logger
+            logger: logger_name
             message: message
             trace_id: traceId
             span_id: spanId
+            application: application
+            tier: tier
       # Extrair informações adicionais
       - labels:
           level:
           application:
+          tier:
           trace_id:
       # Timestamp parsing
       - timestamp:
@@ -44,6 +48,60 @@ scrape_configs:
       # Output final
       - output:
           source: message
+
+  # ========================================
+  # Frontend Logs (recebidos via backend)
+  # ========================================
+  - job_name: frontend-logs
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: frontend
+          application: inovatech-frontend
+          environment: dev
+          tier: frontend
+          __path__: /logs/spring-boot/frontend*.log
+    pipeline_stages:
+      # Parse do JSON externo
+      - json:
+          expressions:
+            timestamp: timestamp
+            level: level
+            message: message
+            tier: tier
+            frontend_context: context
+            frontend_url: url
+            user_agent: userAgent
+      # Parse do FRONTEND_LOG interno (nested JSON)
+      - match:
+          selector: '{job="frontend"}'
+          stages:
+            - regex:
+                expression: 'FRONTEND_LOG: (?P<frontend_json>.*)'
+            - json:
+                source: frontend_json
+                expressions:
+                  frontend_timestamp: timestamp
+                  frontend_level: level
+                  frontend_context: context
+                  frontend_message: message
+                  frontend_url: url
+      # Labels para filtros
+      - labels:
+          level:
+          tier:
+          frontend_context:
+      # Timestamp do frontend
+      - timestamp:
+          source: frontend_timestamp
+          format: RFC3339
+      # Output com mensagem do frontend
+      - template:
+          source: output
+          template: '[{{.frontend_context}}] {{.frontend_message}}'
+      - output:
+          source: output
 
   # ========================================
   # Node.js Frontend Logs (será configurado no Módulo 6)
