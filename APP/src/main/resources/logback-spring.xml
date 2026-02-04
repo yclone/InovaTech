@@ -68,7 +68,6 @@
         <appender-ref ref="BACKEND_FILE"/>
         <appender-ref ref="CONSOLE"/>
     </logger>
-    </logger>
     
     <!-- Spring Framework (reduzir verbosidade) -->
     <logger name="org.springframework" level="INFO"/>
