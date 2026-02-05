@@ -1,7 +1,19 @@
 import './style.css';
+import { logger, createLogger } from './logger.js';
 
 // Configuração da API
 const API_BASE_URL = import.meta.env.DEV ? '/api' : 'http://localhost:5000';
+
+// Loggers específicos
+const apiLogger = createLogger('API');
+const uiLogger = createLogger('UI');
+const authLogger = createLogger('Auth');
+
+// Log inicial
+logger.info('Aplicação frontend inicializada', {
+  apiUrl: API_BASE_URL,
+  environment: import.meta.env.MODE || 'development'
+});
 
 // Estado global da aplicação
 const AppState = {
@@ -57,7 +69,9 @@ class Router {
 
 // Função para fazer requisições HTTP
 async function apiRequest(endpoint, options = {}) {
+  const startTime = performance.now();
   try {
+    apiLogger.debug(`Iniciando requisição: ${options.method || 'GET'} ${endpoint}`);
     console.log('Fazendo requisição para:', `${API_BASE_URL}${endpoint}`);
     
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
@@ -80,8 +94,20 @@ async function apiRequest(endpoint, options = {}) {
     }
     
     if (!response.ok) {
+      apiLogger.warn(`Resposta HTTP não OK: ${response.status}`, {
+        endpoint,
+        status: response.status,
+        statusText: response.statusText
+      });
       throw new Error(data.errors ? data.errors.join(', ') : `Erro HTTP ${response.status}: ${data.message || 'Erro na requisição'}`);
     }
+
+    const duration = performance.now() - startTime;
+    apiLogger.performance(`Requisição ${endpoint}`, duration, {
+      endpoint,
+      method: options.method || 'GET',
+      status: response.status
+    });
 
     return data;
   } catch (error) {
@@ -89,9 +115,17 @@ async function apiRequest(endpoint, options = {}) {
     
     // Tratamento específico para erros de CORS/rede
     if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
+      apiLogger.error('Falha ao conectar ao servidor', error, {
+        endpoint,
+        errorType: 'CORS/Network'
+      });
       throw new Error('Não foi possível conectar ao servidor. Verifique se o backend está rodando em http://localhost:5000 e configurado para aceitar CORS.');
     }
     
+    apiLogger.error(`Erro na requisição ${endpoint}`, error, {
+      endpoint,
+      method: options.method || 'GET'
+    });
     throw error;
   }
 }
@@ -129,6 +163,9 @@ function checkAuth() {
 
 // Função para fazer logout
 function logout() {
+  authLogger.info('Usuário fazendo logout', {
+    usuario: AppState.currentUser?.usuario
+  });
   AppState.currentUser = null;
   AppState.isAuthenticated = false;
   clearStorage();
@@ -263,11 +300,20 @@ function renderRegister() {
         Estado: formData.get('estado')
       };
 
+      authLogger.info('Tentativa de registro de novo usuário', {
+        usuario: data.Usuario,
+        cidade: data.Cidade,
+        estado: data.Estado
+      });
+
       await apiRequest('/clientes', {
         method: 'POST',
         body: JSON.stringify(data)
       });
 
+      authLogger.info('Registro realizado com sucesso', {
+        usuario: data.Usuario
+      });
       showAlert('Cadastro realizado com sucesso! Redirecionando...', 'success');
       
       // Redireciona para o login após 2 segundos
@@ -276,6 +322,7 @@ function renderRegister() {
       }, 2000);
       
     } catch (error) {
+      authLogger.error('Erro no registro', error);
       showAlert(error.message);
     } finally {
       // Reabilita o botão
@@ -341,6 +388,10 @@ function renderLogin() {
         Senha: formData.get('senha')
       };
 
+      authLogger.info('Tentativa de login', {
+        usuario: data.Usuario
+      });
+
       const response = await apiRequest('/login', {
         method: 'POST',
         body: JSON.stringify(data)
@@ -354,6 +405,11 @@ function renderLogin() {
         saveToStorage('currentUser', response.Cliente);
         saveToStorage('isAuthenticated', true);
         
+        authLogger.info('Login realizado com sucesso', {
+          usuario: response.Cliente.Usuario,
+          clienteId: response.Cliente.id
+        });
+        
         showAlert('Login realizado com sucesso! Redirecionando...', 'success');
         
         // Redireciona para o dashboard após 1 segundo
@@ -361,10 +417,15 @@ function renderLogin() {
           router.navigateTo('/dashboard');
         }, 1000);
       } else {
+        authLogger.warn('Falha no login', {
+          usuario: data.Usuario,
+          mensagem: response.Mensagem
+        });
         showAlert(response.Mensagem || 'Erro no login');
       }
       
     } catch (error) {
+      authLogger.error('Erro no login', error);
       showAlert(error.message);
     } finally {
       // Reabilita o botão
@@ -457,6 +518,28 @@ router.addRoute('/', redirectToLogin);
 router.addRoute('/register', renderRegister);
 router.addRoute('/login', renderLogin);
 router.addRoute('/dashboard', renderDashboard);
+
+// Capturar erros globais
+window.addEventListener('error', (event) => {
+  logger.error('Erro global capturado', event.error, {
+    message: event.message,
+    filename: event.filename,
+    lineno: event.lineno,
+    colno: event.colno
+  });
+});
+
+// Capturar promises rejeitadas
+window.addEventListener('unhandledrejection', (event) => {
+  logger.error('Promise rejeitada não tratada', event.reason, {
+    promise: event.promise
+  });
+});
+
+// Flush logs antes de sair da página
+window.addEventListener('beforeunload', () => {
+  logger.flush();
+});
 
 // Verifica se o usuário já está logado
 checkAuth();

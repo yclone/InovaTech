@@ -7,7 +7,12 @@ class Logger {
         this.buffer = []
         this.batchSize = 10
         this.flushInterval = 5000 // 5 segundos
-        this.backendUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'
+        
+        // Em DEV, usa proxy do Vite (/api) para evitar CORS
+        // Em PROD, usa URL completa do backend
+        this.backendUrl = import.meta.env.DEV 
+            ? '' // Usa proxy do Vite (mesma origem)
+            : (import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000')
         
         // Iniciar flush periódico
         this._startPeriodicFlush()

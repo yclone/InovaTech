@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/logs")
+@RequestMapping("/logs")  // ← Removido /api para seguir padrão do ClienteController
 @CrossOrigin(origins = "*")
 public class LogController {
 
