@@ -13,5 +13,8 @@
   "devDependencies": {
     "cypress": "^15.7.1",
     "mochawesome": "^7.1.4"
+  },
+  "dependencies": {
+    "@google/genai": "^1.40.0"
   }
 }

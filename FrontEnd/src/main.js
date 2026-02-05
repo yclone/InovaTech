@@ -305,7 +305,7 @@ function renderLogin() {
             <input type="password" id="senha" name="senha" data-testid="senha" required>
           </div>
           
-          <button type="submit" class="btn btn-primary" id="login-btn" data-testid="login-button">
+          <button type="submit" class="btn btn-primary" id="btn-login" data-testid="login-button">
             Entrar
           </button>
         </form>
@@ -319,7 +319,7 @@ function renderLogin() {
 
   // Adiciona o event listener do formulário
   const form = document.getElementById('login-form');
-  const button = document.getElementById('login-btn');
+  const button = document.getElementById('btn-login');
   
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
