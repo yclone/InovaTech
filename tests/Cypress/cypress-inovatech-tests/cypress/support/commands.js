@@ -2,6 +2,8 @@
 // Custom Commands para InovaTech
 // ***********************************************
 
+import { getSelectorFromGemini } from '../utils/gemini_service';
+
 /**
  * Comando customizado para login genérico
  * @example cy.loginAs('admin')
@@ -189,4 +191,46 @@ Cypress.Commands.add('loginWithSessionAPI', (userType) => {
       cacheAcrossSpecs: true
     }
   );
+});
+
+
+Cypress.Commands.add('smartClick', (selector) => {
+  const geminiApiKey = Cypress.env('GEMINI_API_KEY');
+  cy.get('body', { timeout: 20000 }).then($body => {
+    console.log($body.html());
+    if ($body.find(selector).length > 0) {
+      cy.get(selector).click();
+    } else {
+      Cypress.log({
+        name: 'smartClick',
+        message: `O Seletor '${selector}' não encontrado. Tentando Self-Healing...`
+      });
+
+      cy.document().then((doc) => {
+        const pageHtml = doc.documentElement.outerHTML;
+        console.log('HTML da página para Gemini:', pageHtml);
+        
+        // Usa cy.wrap() para lidar com promises externas no Cypress
+        cy.wrap(
+          getSelectorFromGemini(geminiApiKey, pageHtml, `o elemento com seletor "${selector}"`),
+          { timeout: 30000 } // 30 segundos para a API do Gemini responder
+        ).then((newSelector) => {
+          console.log('Novo seletor sugerido pelo Gemini:', newSelector);
+          if (newSelector) {
+            Cypress.log({
+              name: 'smartClick',
+              message: `Gemini encontrou um novo seletor: '${newSelector}'. Tentando novamente...`
+            });
+            cy.get(newSelector).click();
+          } else {
+            Cypress.log({
+              name: 'smartClick',
+              message: 'Gemini não encontrou um seletor alternativo. A falha continuará.'
+            });
+            throw new Error(`Falha no smartClick: Seletor '${selector}' e alternativa não encontrados.`);
+          }
+        });
+      });
+    }
+  });
 });
