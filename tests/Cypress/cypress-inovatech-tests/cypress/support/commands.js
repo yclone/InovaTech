@@ -209,23 +209,27 @@ Cypress.Commands.add('smartClick', (selector) => {
       cy.document().then((doc) => {
         const pageHtml = doc.documentElement.outerHTML;
         console.log('HTML da página para Gemini:', pageHtml);
-        // Retorne a promise para o Cypress encadear corretamente
-        return getSelectorFromGemini(geminiApiKey, pageHtml, `o elemento com seletor "${selector}"`);
-      }).then((newSelector) => {
-        console.log('Novo seletor sugerido pelo Gemini:', newSelector);
-        if (newSelector) {
-          Cypress.log({
-            name: 'smartClick',
-            message: `Gemini encontrou um novo seletor: '${newSelector}'. Tentando novamente...`
-          });
-          cy.get(newSelector).click();
-        } else {
-          Cypress.log({
-            name: 'smartClick',
-            message: 'Gemini não encontrou um seletor alternativo. A falha continuará.'
-          });
-          throw new Error(`Falha no smartClick: Seletor '${selector}' e alternativa não encontrados.`);
-        }
+        
+        // Usa cy.wrap() para lidar com promises externas no Cypress
+        cy.wrap(
+          getSelectorFromGemini(geminiApiKey, pageHtml, `o elemento com seletor "${selector}"`),
+          { timeout: 30000 } // 30 segundos para a API do Gemini responder
+        ).then((newSelector) => {
+          console.log('Novo seletor sugerido pelo Gemini:', newSelector);
+          if (newSelector) {
+            Cypress.log({
+              name: 'smartClick',
+              message: `Gemini encontrou um novo seletor: '${newSelector}'. Tentando novamente...`
+            });
+            cy.get(newSelector).click();
+          } else {
+            Cypress.log({
+              name: 'smartClick',
+              message: 'Gemini não encontrou um seletor alternativo. A falha continuará.'
+            });
+            throw new Error(`Falha no smartClick: Seletor '${selector}' e alternativa não encontrados.`);
+          }
+        });
       });
     }
   });
