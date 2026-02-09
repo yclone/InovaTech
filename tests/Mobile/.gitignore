@@ -1,0 +1,90 @@
+# Dependencies
+node_modules/
+package-lock.json
+yarn.lock
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+appium.log
+server.log
+
+# Reports and test results
+reports/
+allure-results/
+allure-report/
+reportManager/generated-reports/
+screenshots/
+videos/
+test-results/
+coverage/
+.nyc_output/
+
+# APK files (descomente se quiser versionar APKs)
+# APK/*.apk
+# APK/*.aab
+
+# iOS build files
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# Android build files
+*.apk
+*.aab
+*.ap_
+*.dex
+local.properties
+
+# IDE files
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+.project
+.classpath
+.settings/
+
+# Editor backup files
+*.swp
+*.swo
+*~
+*.bak
+.*.swp
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# Temporary files
+*.tmp
+*.temp
+temp/
+tmp/
+
+# Appium specific
+.appium/
+appium-server.log
+device-*.log
+
+# Mobile specific cache
+.android/
+.gradle/
+build/
+.expo/
+.expo-shared/
