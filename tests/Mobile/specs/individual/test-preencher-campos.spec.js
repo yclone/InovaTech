@@ -1,7 +1,13 @@
 const LoginPage = require('../../app/pageObjects/LoginPage');
+const BackendSetup = require('../../app/helpers/BackendSetup');
 const testData = require('../../app/data/testData');
 
 describe('InovaTech - Preencher Campos', () => {
+  before(async () => {
+    // Configurar backend antes de todos os testes
+    await BackendSetup.configureBackend('http://192.168.5.116:5000/');
+  });
+
   it('Deve preencher campos de login', async () => {
     await driver.pause(3000);
     

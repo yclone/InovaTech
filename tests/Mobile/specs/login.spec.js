@@ -1,9 +1,15 @@
 const LoginPage = require('../app/pageObjects/LoginPage');
 const HomePage = require('../app/pageObjects/HomePage');
 const TestHelpers = require('../app/helpers/TestHelpers');
+const BackendSetup = require('../app/helpers/BackendSetup');
 const testData = require('../app/data/testData');
 
 describe('InovaTech - Testes de Login', () => {
+  before(async () => {
+    // Configurar backend antes de todos os testes
+    await BackendSetup.configureBackend('http://192.168.5.116:5000/');
+  });
+
   beforeEach(async () => {
     // Garante que está na tela de login
     const isLoginScreen = await LoginPage.isLoginScreenDisplayed();

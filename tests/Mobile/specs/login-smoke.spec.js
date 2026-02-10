@@ -1,4 +1,5 @@
 const LoginPage = require('../app/pageObjects/LoginPage');
+const BackendSetup = require('../app/helpers/BackendSetup');
 const testData = require('../app/data/testData');
 
 /**
@@ -6,6 +7,11 @@ const testData = require('../app/data/testData');
  * Testes rápidos para validar funcionalidade básica
  */
 describe('InovaTech - Smoke Test Login', () => {
+  before(async () => {
+    // Configurar backend antes de todos os testes
+    await BackendSetup.configureBackend('http://192.168.5.116:5000/');
+  });
+
   // Garante que cada teste comece na tela de login
   beforeEach(async function() {
     // Pula o primeiro teste que já inicia o app

@@ -4,6 +4,28 @@
 
 Este projeto contém testes automatizados para aplicativos mobile Android usando Appium e WebdriverIO.
 
+> 📖 **[Navegue por toda a documentação →](./INDEX.md)**
+
+---
+
+## ⚡ Início Rápido
+
+### Para Primeira Execução ou Nova Máquina
+
+```powershell
+# 1. Verificar pré-requisitos automaticamente
+.\verificar-pre-requisitos.ps1
+
+# 2. Se tudo estiver OK, executar os testes
+npm run test:smoke
+```
+
+📋 **Configurando pela primeira vez?** [CHECKLIST-NOVA-MAQUINA.md](./CHECKLIST-NOVA-MAQUINA.md)
+📖 **Leia o guia completo**: [PRE-REQUISITOS.md](./PRE-REQUISITOS.md)
+🐛 **Erro de API?** [TROUBLESHOOTING-API.md](./TROUBLESHOOTING-API.md)
+
+---
+
 ## 🛠️ Tecnologias Utilizadas
 
 - **Appium**: Framework de automação mobile
@@ -39,6 +61,10 @@ Este projeto contém testes automatizados para aplicativos mobile Android usando
 5. **Emulador Android ou Dispositivo Real**
    - Emulador configurado via Android Studio
    - Ou dispositivo físico com USB debugging habilitado
+
+6. **Backend API** (Obrigatório!)
+   - Backend Spring Boot deve estar rodando em `http://localhost:8080`
+   - Para iniciar: `cd ../APP && mvn spring-boot:run`
 
 ## 🚀 Configuração Inicial
 
@@ -80,6 +106,52 @@ APP_ACTIVITY=.MainActivity
 ### 5. Configurar o APK
 
 Coloque o arquivo APK do aplicativo na pasta `APK/` e atualize o nome no arquivo de configuração se necessário.
+
+---
+
+## 📚 Documentação Adicional
+
+### Guias Disponíveis
+
+- **[PRE-REQUISITOS.md](./PRE-REQUISITOS.md)** - Guia completo de pré-requisitos e configuração para rodar os testes em qualquer máquina
+- **[TROUBLESHOOTING-API.md](./TROUBLESHOOTING-API.md)** - Solução para erro "Unable to create @Body converter" e problemas de conectividade com API
+- **[TROUBLESHOOTING.md](./TROUBLESHOOTING.md)** - Guia geral de solução de problemas
+- **[QUICKSTART.md](./QUICKSTART.md)** - Início rápido para executar os primeiros testes
+- **[ARQUITETURA.md](./ARQUITETURA.md)** - Arquitetura do projeto de testes
+
+### Scripts Úteis
+
+```powershell
+# Configuração inicial automatizada
+npm run setup
+# OU: .\setup-inicial.ps1
+
+# Verificar todos os pré-requisitos
+npm run verify
+# OU: .\verificar-pre-requisitos.ps1
+
+# Testar apenas login (smoke tests)
+npm run test:smoke
+
+# Testar todos os cenários de login
+npm run test:login
+```
+
+### ⚠️ Problemas Comuns
+
+**Erro: "Unable to create @Body converter"**
+- ➡️ Consulte: [TROUBLESHOOTING-API.md](./TROUBLESHOOTING-API.md)
+- Causa: Backend não está rodando ou app não consegue se conectar
+
+**Erro: "Appium exited before timeout"**
+- ➡️ Instale/atualize Appium: `npm install -g appium`
+- ➡️ Instale driver: `npm run uiautomator2:install`
+
+**Erro: "No devices connected"**
+- ➡️ Inicie o emulador Android
+- ➡️ Verifique: `adb devices`
+
+---
 
 ## 📱 Preparando o Ambiente Android
 

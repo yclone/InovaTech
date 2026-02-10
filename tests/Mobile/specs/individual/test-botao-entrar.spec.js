@@ -1,6 +1,12 @@
 const LoginPage = require('../../app/pageObjects/LoginPage');
+const BackendSetup = require('../../app/helpers/BackendSetup');
 
 describe('InovaTech - Botão Entrar', () => {
+  before(async () => {
+    // Configurar backend antes de todos os testes
+    await BackendSetup.configureBackend('http://192.168.5.116:5000/');
+  });
+
   it('Botão Entrar deve ser clicável', async () => {
     await driver.pause(3000);
     

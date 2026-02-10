@@ -1,7 +1,13 @@
 const BasePage = require('../app/pageObjects/BasePage');
 const TestHelpers = require('../app/helpers/TestHelpers');
+const BackendSetup = require('../app/helpers/BackendSetup');
 
 describe('Smoke Tests - Verificações Básicas', () => {
+  before(async () => {
+    // Configurar backend antes de todos os testes
+    await BackendSetup.configureBackend('http://192.168.5.116:5000/');
+  });
+
   it('Deve iniciar o aplicativo com sucesso', async () => {
     // Assert
     expect(driver).to.exist;
