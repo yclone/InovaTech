@@ -618,148 +618,465 @@ npm run test:spec ./test/specs/login.spec.js  # Roda teste específico
 
 ## Parte 7: Criando Seu Primeiro Teste
 
-### 7.1 Estrutura do Projeto de Teste
+Agora que temos o projeto configurado (Parte 6), vamos criar nosso primeiro teste mobile!
 
-Já temos uma estrutura pronta em `tests/Mobile`:
+### 7.1 Criar a Estrutura Base
 
-```
-tests/Mobile/
-├── app/
-│   ├── pageObjects/      # Page Objects (LoginPage, HomePage)
-│   ├── helpers/          # Helpers (TestHelpers, BackendSetup)
-│   └── data/             # Dados de teste (testData.js)
-├── specs/                # Arquivos de teste
-├── android/              # Configuração Android
-│   └── wdio.conf.android.js
-└── package.json
-```
+#### Passo 1: Criar o arquivo BasePage
 
-### 7.2 Instalar Dependências
+Este arquivo contém métodos comuns que serão usados por todos os Page Objects.
 
-```powershell
-cd C:\Users\vinic\dev\InovaTech\tests\Mobile
-npm install
-```
-
-### 7.3 Anatomia de um Teste Mobile
-
-Vamos analisar o arquivo `login.spec.js`:
+Crie o arquivo `test/pageObjects/BasePage.js`:
 
 ```javascript
-const LoginPage = require('../app/pageObjects/LoginPage');
-const BackendSetup = require('../app/helpers/BackendSetup');
-const testData = require('../app/data/testData');
+class BasePage {
+  /**
+   * Clica em um elemento
+   */
+  async click(element) {
+    await element.waitForDisplayed({ timeout: 10000 });
+    await element.click();
+  }
 
-describe('InovaTech - Testes de Login', () => {
-  // Executa UMA VEZ antes de todos os testes
-  before(async () => {
-    await BackendSetup.configureBackend('http://192.168.5.116:5000/');
-  });
+  /**
+   * Define valor em um campo
+   */
+  async setValue(element, value) {
+    await element.waitForDisplayed({ timeout: 10000 });
+    await element.setValue(value);
+  }
 
-  // Executa ANTES DE CADA teste
-  beforeEach(async () => {
-    const isLoginScreen = await LoginPage.isLoginScreenDisplayed();
-    if (!isLoginScreen) {
-      await TestHelpers.restartApp();
-      await driver.pause(2000);
+  /**
+   * Verifica se elemento está visível
+   */
+  async isDisplayed(element) {
+    try {
+      return await element.isDisplayed();
+    } catch (error) {
+      return false;
     }
-  });
+  }
 
-  // SEU PRIMEIRO TESTE
-  it('Deve exibir a tela de login corretamente', async () => {
-    // Assert - Verificar elementos da tela
-    const titleDisplayed = await LoginPage.isTitleDisplayed();
-    expect(titleDisplayed).to.be.true;
+  /**
+   * Obtém texto de um elemento
+   */
+  async getText(element) {
+    await element.waitForDisplayed({ timeout: 10000 });
+    return await element.getText();
+  }
 
-    const titleText = await LoginPage.getTitleText();
-    expect(titleText).to.equal('InovaTech');
-  });
-});
+  /**
+   * Esconde o teclado
+   */
+  async hideKeyboard() {
+    try {
+      if (driver.isKeyboardShown()) {
+        await driver.hideKeyboard();
+      }
+    } catch (error) {
+      // Ignora erro se teclado não estiver visível
+    }
+  }
+
+  /**
+   * Aguarda um tempo
+   */
+  async pause(milliseconds) {
+    await driver.pause(milliseconds);
+  }
+}
+
+module.exports = BasePage;
 ```
 
-### 7.4 Entendendo o Page Object Pattern
+#### Passo 2: Criar o LoginPage (Page Object)
 
-O **Page Object** encapsula a lógica de interação com uma tela:
+Crie o arquivo `test/pageObjects/LoginPage.js`:
 
 ```javascript
-// LoginPage.js
+const BasePage = require('./BasePage');
+
 class LoginPage extends BasePage {
-  // Definir seletores
+  // ==================== SELETORES ====================
+  
+  /**
+   * Campo de email
+   */
   get emailField() {
     return $('android=new UiSelector().resourceId("com.example.inovatechmob:id/emailInput")');
   }
 
+  /**
+   * Campo de senha
+   */
   get passwordField() {
     return $('android=new UiSelector().resourceId("com.example.inovatechmob:id/passwordInput")');
   }
 
+  /**
+   * Botão de login
+   */
   get loginButton() {
     return $('android=new UiSelector().text("Entrar")');
   }
 
-  // Ações
+  /**
+   * Link criar conta
+   */
+  get createAccountLink() {
+    return $('android=new UiSelector().text("Criar conta")');
+  }
+
+  /**
+   * Título da tela
+   */
+  get titleText() {
+    return $('android=new UiSelector().text("InovaTech")');
+  }
+
+  // ==================== AÇÕES ====================
+
+  /**
+   * Preenche o campo de email
+   */
   async fillEmail(email) {
     await this.setValue(this.emailField, email);
   }
 
+  /**
+   * Preenche o campo de senha
+   */
   async fillPassword(password) {
     await this.setValue(this.passwordField, password);
   }
 
+  /**
+   * Clica no botão de login
+   */
+  async clickLoginButton() {
+    await this.click(this.loginButton);
+  }
+
+  /**
+   * Faz o login completo
+   */
   async login(email, password) {
     await this.fillEmail(email);
     await this.hideKeyboard();
+    await this.pause(500);
     await this.fillPassword(password);
     await this.hideKeyboard();
-    await this.click(this.loginButton);
+    await this.pause(500);
+    await this.clickLoginButton();
+  }
+
+  /**
+   * Clica em criar conta
+   */
+  async clickCreateAccount() {
+    await this.click(this.createAccountLink);
+  }
+
+  // ==================== VALIDAÇÕES ====================
+
+  /**
+   * Verifica se está na tela de login
+   */
+  async isLoginScreenDisplayed() {
+    return await this.isDisplayed(this.loginButton);
+  }
+
+  /**
+   * Verifica se o título está visível
+   */
+  async isTitleDisplayed() {
+    return await this.isDisplayed(this.titleText);
+  }
+
+  /**
+   * Obtém o texto do título
+   */
+  async getTitleText() {
+    return await this.getText(this.titleText);
   }
 }
+
+module.exports = new LoginPage();
 ```
 
-### 7.5 Criando Seu Primeiro Teste do Zero
+> 💡 **Dica:** Use o Appium Inspector (Parte 5) para capturar os seletores corretos do seu app!
 
-Vamos criar um teste simples para verificar os elementos da tela:
+#### Passo 3: Criar arquivo de dados de teste
+
+Crie o arquivo `test/data/testData.js`:
 
 ```javascript
-const LoginPage = require('../app/pageObjects/LoginPage');
-const BackendSetup = require('../app/helpers/BackendSetup');
+module.exports = {
+  validUsers: {
+    mainTest: {
+      email: 'teste@teste.com',
+      password: '123'
+    },
+    adminUser: {
+      email: 'admin@teste.com',
+      password: 'admin123'
+    }
+  },
+  
+  invalidUsers: {
+    wrongPassword: {
+      email: 'teste@teste.com',
+      password: 'senhaErrada'
+    },
+    wrongEmail: {
+      email: 'naoexiste@teste.com',
+      password: '123'
+    }
+  }
+};
+```
+
+### 7.2 Criar Seu Primeiro Teste
+
+Agora vamos criar o arquivo de teste! Crie o arquivo `test/specs/primeiro-teste.spec.js`:
+
+```javascript
+const LoginPage = require('../pageObjects/LoginPage');
+const testData = require('../data/testData');
 
 describe('Meu Primeiro Teste Mobile', () => {
-  before(async () => {
-    // Configurar backend
-    await BackendSetup.configureBackend('http://192.168.5.116:5000/');
+  
+  it('Teste 01 - Deve verificar que a tela de login carregou', async () => {
+    // Aguarda a tela carregar
+    await driver.pause(3000);
+    
+    // Verifica se está na tela de login
+    const isLoginScreen = await LoginPage.isLoginScreenDisplayed();
+    
+    // Valida
+    expect(isLoginScreen).to.be.true;
+    
+    console.log('✅ Teste 01 passou - Tela de login carregada!');
   });
 
-  it('Deve validar que os campos estão visíveis', async () => {
-    // Arrange - Preparação (já feita no before)
-    
-    // Act - Ação (apenas aguardar o app carregar)
-    await driver.pause(2000);
-    
-    // Assert - Verificação
+  it('Teste 02 - Deve validar que os elementos estão visíveis', async () => {
+    // Verifica visibilidade dos elementos
     const emailVisible = await LoginPage.emailField.isDisplayed();
     const passwordVisible = await LoginPage.passwordField.isDisplayed();
     const buttonVisible = await LoginPage.loginButton.isDisplayed();
+    const titleVisible = await LoginPage.isTitleDisplayed();
     
+    // Valida cada elemento
     expect(emailVisible).to.be.true;
     expect(passwordVisible).to.be.true;
     expect(buttonVisible).to.be.true;
+    expect(titleVisible).to.be.true;
     
-    console.log('✅ Todos os elementos estão visíveis!');
+    console.log('✅ Teste 02 passou - Todos os elementos estão visíveis!');
   });
 
-  it('Deve preencher os campos de login', async () => {
-    // Act
-    await LoginPage.fillEmail('teste@teste.com');
-    await LoginPage.fillPassword('123');
+  it('Teste 03 - Deve preencher o campo de email', async () => {
+    const { email } = testData.validUsers.mainTest;
     
-    // Assert
+    // Preenche o email
+    await LoginPage.fillEmail(email);
+    await driver.pause(1000);
+    
+    // Valida que o campo foi preenchido
     const emailValue = await LoginPage.emailField.getText();
-    expect(emailValue).to.include('teste@teste.com');
+    expect(emailValue).to.include(email);
     
-    console.log('✅ Campos preenchidos com sucesso!');
+    console.log('✅ Teste 03 passou - Email preenchido!');
+  });
+
+  it('Teste 04 - Deve preencher o campo de senha', async () => {
+    const { password } = testData.validUsers.mainTest;
+    
+    // Preenche a senha
+    await LoginPage.fillPassword(password);
+    await driver.pause(1000);
+    
+    // Valida que o campo existe e está preenchido
+    const passwordFieldExists = await LoginPage.passwordField.isDisplayed();
+    expect(passwordFieldExists).to.be.true;
+    
+    console.log('✅ Teste 04 passou - Senha preenchida!');
+  });
+
+  it('Teste 05 - Deve realizar login completo', async () => {
+    const { email, password } = testData.validUsers.mainTest;
+    
+    // Realiza login
+    await LoginPage.login(email, password);
+    await driver.pause(3000);
+    
+    // Verifica se saiu da tela de login
+    const stillOnLogin = await LoginPage.isLoginScreenDisplayed();
+    expect(stillOnLogin).to.be.false;
+    
+    console.log('✅ Teste 05 passou - Login realizado com sucesso!');
   });
 });
+```
+
+### 7.3 Entendendo a Estrutura do Teste
+
+#### 📝 Anatomia de um Teste
+
+```javascript
+describe('Nome da Suite de Testes', () => {
+  // Executa UMA VEZ antes de todos os testes
+  before(async () => {
+    // Setup inicial
+  });
+
+  // Executa ANTES DE CADA teste
+  beforeEach(async () => {
+    // Preparação para cada teste
+  });
+
+  // Um caso de teste
+  it('Descrição do que o teste faz', async () => {
+    // Arrange - Preparar dados
+    const email = 'teste@teste.com';
+    
+    // Act - Executar ação
+    await LoginPage.fillEmail(email);
+    
+    // Assert - Validar resultado
+    expect(resultado).to.be.true;
+  });
+
+  // Executa DEPOIS DE CADA teste
+  afterEach(async () => {
+    // Limpeza após cada teste
+  });
+
+  // Executa UMA VEZ depois de todos os testes
+  after(async () => {
+    // Limpeza final
+  });
+});
+```
+
+#### 🎯 Pattern AAA (Arrange, Act, Assert)
+
+Organize seus testes seguindo este padrão:
+
+1. **Arrange (Preparar)** - Configure os dados e pré-condições
+2. **Act (Agir)** - Execute a ação que está sendo testada
+3. **Assert (Verificar)** - Valide que o resultado é o esperado
+
+```javascript
+it('Exemplo usando AAA', async () => {
+  // Arrange - Preparar
+  const email = 'teste@teste.com';
+  const password = '123';
+  
+  // Act - Agir
+  await LoginPage.login(email, password);
+  await driver.pause(2000);
+  
+  // Assert - Verificar
+  const stillOnLogin = await LoginPage.isLoginScreenDisplayed();
+  expect(stillOnLogin).to.be.false;
+});
+```
+
+#### ✅ Asserções com Chai
+
+Exemplos de asserções mais comuns:
+
+```javascript
+// Igualdade
+expect(valor).to.equal('esperado');
+expect(valor).to.not.equal('naoEsperado');
+
+// Booleanos
+expect(valor).to.be.true;
+expect(valor).to.be.false;
+
+// Conter texto
+expect(texto).to.include('pedaço');
+expect(array).to.include(item);
+
+// Existência
+expect(valor).to.exist;
+expect(valor).to.not.be.null;
+expect(valor).to.not.be.undefined;
+
+// Comparações
+expect(numero).to.be.greaterThan(5);
+expect(numero).to.be.lessThan(10);
+```
+
+### 7.4 Dicas de Boas Práticas
+
+#### ✨ Use Page Objects
+```javascript
+// ❌ Ruim - Seletor direto no teste
+it('teste ruim', async () => {
+  const campo = await $('android=new UiSelector().resourceId("emailInput")');
+  await campo.setValue('teste@teste.com');
+});
+
+// ✅ Bom - Usando Page Object
+it('teste bom', async () => {
+  await LoginPage.fillEmail('teste@teste.com');
+});
+```
+
+#### ⏱️ Use Waits Apropriados
+```javascript
+// ❌ Ruim - Pause fixo
+await driver.pause(5000);
+
+// ✅ Bom - Wait condicional
+await element.waitForDisplayed({ timeout: 10000 });
+```
+
+#### 📝 Escreva Testes Descritivos
+```javascript
+// ❌ Ruim - Descrição vaga
+it('teste 1', async () => { ... });
+
+// ✅ Bom - Descrição clara
+it('Deve exibir mensagem de erro ao fazer login com senha incorreta', async () => { ... });
+```
+
+#### 🔍 Um Assert por Teste (quando possível)
+```javascript
+// ✅ Bom - Teste focado
+it('Campo de email deve estar visível', async () => {
+  const visible = await LoginPage.emailField.isDisplayed();
+  expect(visible).to.be.true;
+});
+
+it('Campo de senha deve estar visível', async () => {
+  const visible = await LoginPage.passwordField.isDisplayed();
+  expect(visible).to.be.true;
+});
+```
+
+### 7.5 Estrutura Final do Projeto
+
+Após criar todos os arquivos, seu projeto deve estar assim:
+
+```
+MobileAutomation/
+├── test/
+│   ├── specs/
+│   │   └── primeiro-teste.spec.js    ✅ CRIADO
+│   ├── pageObjects/
+│   │   ├── BasePage.js               ✅ CRIADO
+│   │   └── LoginPage.js              ✅ CRIADO
+│   ├── helpers/
+│   └── data/
+│       └── testData.js               ✅ CRIADO
+├── node_modules/
+├── package.json
+├── package-lock.json
+└── wdio.conf.js
 ```
 
 ---
