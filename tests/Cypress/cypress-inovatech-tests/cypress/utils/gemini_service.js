@@ -14,12 +14,23 @@ export async function getSelectorFromGemini(
   }
 
   const prompt = `
-    Analise este HTML e encontre um seletor CSS ou XPath robusto para o elemento.
-    O elemento é ${elementDescription}.
-    Retorne SOMENTE o seletor. Ex: #login-btn ou //button[text()='Entrar'].
-    
-    HTML:
-    ${pageHtml}
+    Você é um especialista em automação de testes e Web Scraping.
+
+  Sua tarefa é analisar o HTML fornecido e gerar UM ÚNICO seletor robusto para localizar o elemento solicitado.
+
+  Regras obrigatórias:
+  - Retorne apenas o seletor, sem explicações, comentários ou markdown.
+  - Não inclua texto adicional.
+  - Gere somente UM seletor.
+  - Prefira seletores estáveis (id, data-*, name, aria-label).
+  - Evite seletores frágeis baseados apenas em posição (ex: div[3]/span[2]).
+  - Se possível, prefira CSS. Use XPath apenas se não houver um CSS confiável.
+
+    Descrição do elemento:
+  ${elementDescription}
+
+  HTML:
+  ${pageHtml}
   `;
 
   try {

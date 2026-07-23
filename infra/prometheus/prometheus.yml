@@ -70,3 +70,10 @@ scrape_configs:
       - targets: ['tempo:3200']
         labels:
           application: 'tempo'
+
+  # ========================================
+  # Docker Daemon Metrics (será configurado no Módulo 5)
+    # ... existing jobs ...
+  - job_name: 'docker'
+    static_configs:
+      - targets: ['host.docker.internal:9323'] # Use host.docker.internal for Docker Desktop

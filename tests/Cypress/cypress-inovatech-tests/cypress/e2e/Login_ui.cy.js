@@ -8,7 +8,7 @@ describe('InovaTech - teste de login com IA', () => {
     it('deve realizar login com credenciais validas', () => {
         cy.get('input[name="usuario"]').type("teste@teste.com");
         cy.get('input[name="senha"]').type("senha123");
-        // cy.get('button[type="submit"]').click();
+        // cy.get('#login-btn').click();
         cy.smartClick('#login-btn').should('be.visible');
 
         // Verificar redirecionamento para dashboard
