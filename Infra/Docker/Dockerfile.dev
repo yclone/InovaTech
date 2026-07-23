@@ -1,0 +1,47 @@
+# ============================================
+# Dockerfile para Desenvolvimento - InovaTech Backend
+# ============================================
+# Este Dockerfile é otimizado para desenvolvimento local
+# com hot-reload e ferramentas de debug
+
+FROM eclipse-temurin:21-jdk-alpine
+
+LABEL maintainer="inovatech@exemplo.com"
+LABEL description="InovaTech Backend - Development Environment"
+LABEL version="dev"
+
+# Instala ferramentas úteis para desenvolvimento
+RUN apk add --no-cache \
+    curl \
+    wget \
+    vim \
+    git \
+    && rm -rf /var/cache/apk/*
+
+WORKDIR /app
+
+# Copia arquivos de configuração Maven
+COPY mvnw .
+COPY .mvn .mvn
+COPY pom.xml .
+
+RUN chmod +x ./mvnw && \
+    ./mvnw dependency:go-offline -B
+
+# Copia código fonte
+COPY src src
+
+# Configurações para desenvolvimento
+ENV SPRING_PROFILES_ACTIVE=dev
+ENV SPRING_DEVTOOLS_RESTART_ENABLED=true
+ENV SPRING_DEVTOOLS_LIVERELOAD_ENABLED=true
+ENV SERVER_PORT=5000
+ENV JAVA_OPTS="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005"
+
+# Expõe porta da aplicação e porta de debug
+EXPOSE 5000
+EXPOSE 5005
+
+# Compila e executa em modo desenvolvimento
+# O Maven Spring Boot plugin permite hot-reload
+CMD ["./mvnw", "spring-boot:run", "-Dspring-boot.run.jvmArguments=${JAVA_OPTS}"]

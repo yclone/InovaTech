@@ -1,0 +1,98 @@
+# ============================================
+# Dockerfile para Produção - InovaTech Backend
+# ============================================
+# Este Dockerfile inclui todas as melhores práticas
+# e otimizações para ambiente de produção
+
+# Argumentos de build para parametrização
+ARG JAVA_VERSION=21
+ARG MAVEN_VERSION=3.9.5
+
+# ============================================
+# ESTÁGIO 1: BUILD COM CACHE DE DEPENDÊNCIAS
+# ============================================
+FROM eclipse-temurin:${JAVA_VERSION}-jdk-alpine AS dependencies
+
+WORKDIR /build
+
+# Cache de dependências Maven
+# Esta camada só é reconstruída se pom.xml mudar
+COPY pom.xml .
+COPY mvnw .
+COPY .mvn .mvn
+
+RUN chmod +x ./mvnw && \
+    ./mvnw dependency:go-offline -B
+
+# ============================================
+# ESTÁGIO 2: BUILD DA APLICAÇÃO
+# ============================================
+FROM dependencies AS builder
+
+WORKDIR /build
+
+# Copia apenas o código fonte (dependências já estão cached)
+COPY src src
+
+# Compila com otimizações
+RUN ./mvnw clean package -DskipTests -B && \
+    # Extrai informações do JAR para melhor cache
+    java -Djarmode=layertools -jar target/InovaTech-*.jar extract
+
+# ============================================
+# ESTÁGIO 3: RUNTIME OTIMIZADO
+# ============================================
+FROM eclipse-temurin:${JAVA_VERSION}-jre-alpine
+
+# Metadados da imagem
+LABEL maintainer="inovatech@exemplo.com"
+LABEL description="InovaTech Backend - Production Ready"
+LABEL version="3.0"
+LABEL java.version="${JAVA_VERSION}"
+
+# Instala ferramentas úteis para debugging (opcionais)
+RUN apk add --no-cache \
+    curl \
+    wget \
+    && rm -rf /var/cache/apk/*
+
+# Cria estrutura de diretórios
+WORKDIR /app
+
+# Cria usuário e grupo para a aplicação
+RUN addgroup -g 1000 spring && \
+    adduser -u 1000 -G spring -s /bin/sh -D spring && \
+    mkdir -p /app/logs /app/config && \
+    chown -R spring:spring /app
+
+# Copia o JAR do estágio de build
+COPY --from=builder --chown=spring:spring /build/target/InovaTech-*.jar app.jar
+
+# Muda para usuário não-privilegiado
+USER spring:spring
+
+# Configurações de ambiente
+ENV JAVA_OPTS="-XX:+UseContainerSupport \
+    -XX:MaxRAMPercentage=75.0 \
+    -XX:InitialRAMPercentage=50.0 \
+    -XX:+ExitOnOutOfMemoryError \
+    -XX:+UseG1GC \
+    -XX:+DisableExplicitGC \
+    -Djava.security.egd=file:/dev/./urandom"
+
+ENV SPRING_PROFILES_ACTIVE=production
+ENV SERVER_PORT=5000
+ENV LOGGING_LEVEL_ROOT=INFO
+
+# Expõe a porta da aplicação
+EXPOSE ${SERVER_PORT}
+
+# Volume para logs (opcional)
+VOLUME ["/app/logs"]
+
+# Healthcheck robusto
+HEALTHCHECK --interval=30s --timeout=5s --start-period=60s --retries=3 \
+  CMD wget --quiet --tries=1 --spider http://localhost:${SERVER_PORT}/actuator/health || exit 1
+
+# Ponto de entrada com logging
+ENTRYPOINT ["sh", "-c", "echo 'Starting InovaTech Backend...' && java ${JAVA_OPTS} -jar app.jar"]

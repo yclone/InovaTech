@@ -1,0 +1,73 @@
+# ============================================
+# Dockerfile Multi-Stage para InovaTech Backend
+# ============================================
+# Este Dockerfile usa múltiplos estágios para criar
+# uma imagem final menor e mais otimizada
+
+# ============================================
+# ESTÁGIO 1: BUILD
+# ============================================
+# Neste estágio, compilamos a aplicação
+FROM eclipse-temurin:21-jdk-alpine AS builder
+
+LABEL stage="builder"
+LABEL description="Estágio de compilação da aplicação"
+
+WORKDIR /build
+
+# Copia arquivos de configuração do Maven
+COPY mvnw .
+COPY .mvn .mvn
+COPY pom.xml .
+
+# Ajusta permissões e baixa dependências
+RUN chmod +x ./mvnw && \
+    ./mvnw dependency:go-offline -B
+
+# Copia código fonte
+COPY src src
+
+# Compila a aplicação
+# -DskipTests: pula testes para acelerar
+# -B: modo batch (sem output colorido)
+RUN ./mvnw clean package -DskipTests -B
+
+# ============================================
+# ESTÁGIO 2: RUNTIME
+# ============================================
+# Neste estágio, criamos a imagem final apenas com o necessário
+FROM eclipse-temurin:21-jre-alpine
+
+LABEL maintainer="inovatech@exemplo.com"
+LABEL description="InovaTech Backend - Multi-Stage Build"
+LABEL version="2.0"
+
+WORKDIR /app
+
+# Copia APENAS o JAR compilado do estágio anterior
+# Isso reduz drasticamente o tamanho da imagem final
+COPY --from=builder /build/target/InovaTech-0.0.1-SNAPSHOT.jar app.jar
+
+# Cria um grupo e usuário não-privilegiado para segurança
+# Nunca execute aplicações como root em produção!
+RUN addgroup -S spring && \
+    adduser -S spring -G spring && \
+    chown spring:spring app.jar
+
+# Muda para o usuário não-privilegiado
+USER spring:spring
+
+# Define variáveis de ambiente para configuração da JVM
+ENV JAVA_OPTS="-Xmx512m -Xms256m -XX:+UseContainerSupport"
+ENV SERVER_PORT=5000
+
+# Expõe a porta da aplicação
+EXPOSE ${SERVER_PORT}
+
+# Healthcheck para monitoramento
+# Verifica se a aplicação está respondendo a cada 30 segundos
+HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
+  CMD wget --quiet --tries=1 --spider http://localhost:${SERVER_PORT}/actuator/health || exit 1
+
+# Usa ENTRYPOINT com shell para expandir variáveis
+ENTRYPOINT ["sh", "-c", "java ${JAVA_OPTS} -jar app.jar"]

@@ -1,0 +1,31 @@
+# Ignorar node_modules
+node_modules/
+
+# Ignorar arquivos de teste e resultados
+cypress/screenshots/
+cypress/videos/
+cypress/reports/
+
+# Ignorar arquivos de ambiente e credenciais ⚠️ IMPORTANTE
+.env
+.env.local
+cypress.env.json
+
+# Ignorar arquivos do sistema
+.DS_Store
+Thumbs.db
+
+# Ignorar arquivos de IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Ignorar logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Ignorar arquivos de build
+dist/
+build/

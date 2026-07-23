@@ -1,0 +1,43 @@
+# ============================================
+# Dockerfile Básico para InovaTech Backend
+# ============================================
+# Este é o exemplo mais simples de Dockerfile
+# para a aplicação Spring Boot
+
+# Imagem base com Java 21
+FROM eclipse-temurin:21-jdk-alpine
+
+# Informações sobre a imagem
+LABEL maintainer="inovatech@exemplo.com"
+LABEL description="InovaTech Backend - Dockerfile Básico"
+LABEL version="1.0"
+
+# Define o diretório de trabalho dentro do container
+WORKDIR /app
+
+# Copia o Maven wrapper e suas configurações
+COPY mvnw .
+COPY .mvn .mvn
+
+# Garante permissão de execução no wrapper
+RUN chmod +x ./mvnw
+
+# Copia o arquivo de configuração do Maven (pom.xml)
+COPY pom.xml .
+
+# Baixa todas as dependências do projeto
+# Esta camada é cached, então só reexecuta se o pom.xml mudar
+RUN ./mvnw dependency:go-offline -B
+
+# Copia o código fonte da aplicação
+COPY src src
+
+# Compila o projeto e gera o JAR
+# -DskipTests pula os testes para acelerar o build
+RUN ./mvnw clean package -DskipTests
+
+# Expõe a porta que a aplicação usa (definida em application.properties)
+EXPOSE 5000
+
+# Comando para executar a aplicação quando o container iniciar
+CMD ["java", "-jar", "target/InovaTech-0.0.1-SNAPSHOT.jar"]

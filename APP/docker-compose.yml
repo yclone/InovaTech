@@ -1,0 +1,35 @@
+services:
+  # Aplicação Spring Boot
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: inovatech-backend:1.0
+    container_name: inovatech-app
+    ports:
+      - "5000:5000"
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      - SERVER_PORT=5000
+      # Configurações do H2
+      - SPRING_DATASOURCE_URL=jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+      - SPRING_DATASOURCE_USERNAME=sa
+      - SPRING_DATASOURCE_PASSWORD=123
+      - SPRING_H2_CONSOLE_ENABLED=true
+      # URLs de serviços externos (ajuste conforme necessário)
+      - URL_STS=http://localhost:8080/mock/sts
+      - URL_MAILING=http://localhost:8080/mock/mailing
+      - PRINT_GOLDEN_TICKET=false
+    networks:
+      - inovatech-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:5000/swagger-ui.html || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+networks:
+  inovatech-network:
+    driver: bridge

@@ -1,0 +1,34 @@
+{
+  "name": "k6-inovatech-performance-tests",
+  "version": "1.0.0",
+  "description": "Testes de Performance K6 para InovaTech - Treinamento Completo",
+  "main": "index.js",
+  "scripts": {
+    "test": "k6 run",
+    "test:health": "k6 run tests/health-check.js",
+    "test:load": "k6 run tests/load-test.js",
+    "test:stress": "k6 run tests/stress-test.js",
+    "test:spike": "k6 run tests/spike-test.js",
+    "test:volume": "k6 run tests/volume-test.js",
+    "test:soak": "k6 run tests/soak-test.js",
+    "test:breakpoint": "k6 run tests/breakpoint-test.js",
+    "test:api-crud": "k6 run tests/api-crud-test.js",
+    "test:frontend": "k6 run tests/frontend-test.js",
+    "test:all": "k6 run tests/*.js",
+    "install-k6": "echo 'Instale o K6 seguindo: https://k6.io/docs/get-started/installation/'"
+  },
+  "keywords": [
+    "k6",
+    "performance",
+    "load-testing",
+    "stress-testing",
+    "inovatech",
+    "training"
+  ],
+  "author": "InovaTech Team",
+  "license": "MIT",
+  "devDependencies": {},
+  "engines": {
+    "k6": ">=0.40.0"
+  }
+}

@@ -1,5 +1,6 @@
 package br.com.InovaTech.InovaTech.controller;
 
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 
 import org.modelmapper.ModelMapper;
@@ -24,6 +25,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
@@ -104,14 +106,54 @@ public class ClienteController {
 	@PostMapping("/login")
 	@ResponseStatus(HttpStatus.OK)
 	@Operation(summary = "Realizar login", 
-			   description = "Autentica um cliente usando email e senha")
+			   description = "Autentica um cliente usando email e senha e cria uma sessão")
 	@ApiResponses(value = {
 		@ApiResponse(responseCode = "200", description = "Resposta do login processada",
 				content = @Content(schema = @Schema(implementation = LoginResponseDTO.class))),
 		@ApiResponse(responseCode = "400", description = "Dados inválidos fornecidos"),
 		@ApiResponse(responseCode = "500", description = "Erro interno do servidor")
 	})
-	public LoginResponseDTO login(@RequestBody @Valid LoginRequestDTO loginRequest) {
-		return service.login(loginRequest);
+	public LoginResponseDTO login(@RequestBody @Valid LoginRequestDTO loginRequest, HttpSession session) {
+		LoginResponseDTO response = service.login(loginRequest);
+		
+		// Se o login foi bem-sucedido, cria sessão
+		if (response.isSucesso()) {
+			session.setAttribute("usuarioLogado", response.getCliente());
+			response.setSessionId(session.getId());
+		}
+		
+		return response;
+	}
+
+	@GetMapping("/session")
+	@Operation(summary = "Verificar sessão", 
+			   description = "Verifica se existe uma sessão ativa e retorna os dados do usuário")
+	@ApiResponses(value = {
+		@ApiResponse(responseCode = "200", description = "Sessão verificada"),
+		@ApiResponse(responseCode = "401", description = "Sessão inválida ou expirada")
+	})
+	public Map<String, Object> verificarSessao(HttpSession session) {
+		ClienteDTO usuarioLogado = (ClienteDTO) session.getAttribute("usuarioLogado");
+		
+		if (usuarioLogado != null) {
+			return Map.of(
+				"sessaoAtiva", true,
+				"usuario", usuarioLogado,
+				"sessionId", session.getId()
+			);
+		}
+		
+		throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Sessão inválida ou expirada");
+	}
+
+	@PostMapping("/logout")
+	@Operation(summary = "Fazer logout", 
+			   description = "Invalida a sessão atual do usuário")
+	@ApiResponses(value = {
+		@ApiResponse(responseCode = "200", description = "Logout realizado com sucesso")
+	})
+	public Map<String, String> logout(HttpSession session) {
+		session.invalidate();
+		return Map.of("mensagem", "Logout realizado com sucesso");
 	}
 }

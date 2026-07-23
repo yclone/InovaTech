@@ -1,0 +1,72 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    cluster: 'inovatech-local'
+    environment: 'dev'
+
+# Regras de alertas (será expandido no Módulo 5)
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: []
+
+# Configuração de scraping
+scrape_configs:
+  # ========================================
+  # Prometheus self-monitoring
+  # ========================================
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+        labels:
+          application: 'prometheus'
+
+  # ========================================
+  # Spring Boot Backend (InovaTech)
+  # ========================================
+  - job_name: 'spring-boot-backend'
+    metrics_path: '/actuator/prometheus'
+    scrape_interval: 10s
+    static_configs:
+      - targets: ['host.docker.internal:5000']
+        labels:
+          application: 'inovatech-backend'
+          environment: 'dev'
+          tier: 'backend'
+    # Detectar automaticamente se a aplicação está rodando
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        replacement: 'backend-app'
+
+  # ========================================
+  # Node.js Frontend (será configurado no Módulo 6)
+  # ========================================
+  - job_name: 'nodejs-frontend'
+    metrics_path: '/metrics'
+    scrape_interval: 10s
+    static_configs:
+      - targets: [] # Será preenchido quando configurarmos o frontend
+        labels:
+          application: 'inovatech-frontend'
+          environment: 'dev'
+          tier: 'frontend'
+
+  # ========================================
+  # Loki para métricas sobre logs
+  # ========================================
+  - job_name: 'loki'
+    static_configs:
+      - targets: ['loki:3100']
+        labels:
+          application: 'loki'
+
+  # ========================================
+  # Tempo para métricas sobre traces
+  # ========================================
+  - job_name: 'tempo'
+    static_configs:
+      - targets: ['tempo:3200']
+        labels:
+          application: 'tempo'
