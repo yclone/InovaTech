@@ -3,6 +3,7 @@ package br.com.InovaTech.InovaTech.service.impl;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import br.com.InovaTech.InovaTech.exceptions.BusinessException;
 import br.com.InovaTech.InovaTech.exceptions.InternalErrorException;
+import br.com.InovaTech.InovaTech.exceptions.NotFoundException;
 import br.com.InovaTech.InovaTech.helpers.LoadProperties;
 import br.com.InovaTech.InovaTech.model.entity.Cliente;
 import br.com.InovaTech.InovaTech.model.dto.ClienteDTO;
@@ -13,6 +14,8 @@ import br.com.InovaTech.InovaTech.repository.MailingRepository;
 import br.com.InovaTech.InovaTech.service.ClienteService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.modelmapper.ModelMapper;
@@ -110,6 +113,130 @@ public class ClienteServiceImpl implements ClienteService {
             log.error("Erro ao listar clientes: erro={}", e.getMessage(), e);
             throw new InternalErrorException("Erro ao acessar o banco de dados", e);
         }
+    }
+
+    @Override
+    public Page<Cliente> getList(Pageable pageable, String cidade, String estado) {
+        log.debug("Entrando no método getList paginado. cidade={}, estado={}, pageable={}", cidade, estado, pageable);
+
+        try {
+            Page<Cliente> clientes;
+
+            if (isBlank(cidade) && isBlank(estado)) {
+                clientes = repository.findAll(pageable);
+            } else {
+                clientes = repository.findByCidadeContainingIgnoreCaseAndEstadoContainingIgnoreCase(
+                        cidade == null ? "" : cidade, estado == null ? "" : estado, pageable);
+            }
+
+            log.info("Listagem paginada de clientes realizada. Página: {}, itens na página: {}, total: {}",
+                    clientes.getNumber(), clientes.getNumberOfElements(), clientes.getTotalElements());
+
+            log.debug("Saindo do método getList paginado");
+            return clientes;
+        } catch (DataAccessException e) {
+            log.error("Erro ao listar clientes paginados: erro={}", e.getMessage(), e);
+            throw new InternalErrorException("Erro ao acessar o banco de dados", e);
+        }
+    }
+
+    @Override
+    public Cliente update(long id, Cliente cliente) {
+        log.debug("Entrando no método update. ID={}, usuario={}", id, cliente.getUsuario());
+        log.info("Iniciando atualização completa do cliente: id={}", id);
+
+        try {
+            Cliente clienteExistente = buscarClienteOuFalhar(id);
+
+            clienteExistente.setPrimeiroNome(cliente.getPrimeiroNome());
+            clienteExistente.setUltimoNome(cliente.getUltimoNome());
+            clienteExistente.setUsuario(cliente.getUsuario());
+            clienteExistente.setCidade(cliente.getCidade());
+            clienteExistente.setEstado(cliente.getEstado());
+
+            if (!isBlank(cliente.getSenha())) {
+                log.debug("Criptografando nova senha para o cliente: id={}", id);
+                clienteExistente.setSenha(passwordEncoder.encode(cliente.getSenha()));
+            }
+
+            Cliente clienteAtualizado = repository.save(clienteExistente);
+            log.info("Cliente atualizado com sucesso: id={}, usuario={}", clienteAtualizado.getId(),
+                    clienteAtualizado.getUsuario());
+
+            log.debug("Saindo do método update com sucesso. ID={}", id);
+            return clienteAtualizado;
+        } catch (DataAccessException e) {
+            log.error("Erro ao atualizar cliente: id={}, erro={}", id, e.getMessage(), e);
+            throw new InternalErrorException("Erro ao acessar o banco de dados", e);
+        }
+    }
+
+    @Override
+    public Cliente partialUpdate(long id, Cliente cliente) {
+        log.debug("Entrando no método partialUpdate. ID={}", id);
+        log.info("Iniciando atualização parcial do cliente: id={}", id);
+
+        try {
+            Cliente clienteExistente = buscarClienteOuFalhar(id);
+
+            if (cliente.getPrimeiroNome() != null) {
+                clienteExistente.setPrimeiroNome(cliente.getPrimeiroNome());
+            }
+            if (cliente.getUltimoNome() != null) {
+                clienteExistente.setUltimoNome(cliente.getUltimoNome());
+            }
+            if (cliente.getUsuario() != null) {
+                clienteExistente.setUsuario(cliente.getUsuario());
+            }
+            if (cliente.getCidade() != null) {
+                clienteExistente.setCidade(cliente.getCidade());
+            }
+            if (cliente.getEstado() != null) {
+                clienteExistente.setEstado(cliente.getEstado());
+            }
+            if (!isBlank(cliente.getSenha())) {
+                log.debug("Criptografando nova senha para o cliente: id={}", id);
+                clienteExistente.setSenha(passwordEncoder.encode(cliente.getSenha()));
+            }
+
+            Cliente clienteAtualizado = repository.save(clienteExistente);
+            log.info("Cliente atualizado parcialmente com sucesso: id={}, usuario={}", clienteAtualizado.getId(),
+                    clienteAtualizado.getUsuario());
+
+            log.debug("Saindo do método partialUpdate com sucesso. ID={}", id);
+            return clienteAtualizado;
+        } catch (DataAccessException e) {
+            log.error("Erro ao atualizar parcialmente cliente: id={}, erro={}", id, e.getMessage(), e);
+            throw new InternalErrorException("Erro ao acessar o banco de dados", e);
+        }
+    }
+
+    @Override
+    public void delete(long id) {
+        log.debug("Entrando no método delete. ID={}", id);
+        log.info("Iniciando exclusão do cliente: id={}", id);
+
+        try {
+            Cliente cliente = buscarClienteOuFalhar(id);
+            repository.delete(cliente);
+
+            log.info("Cliente excluído com sucesso: id={}", id);
+            log.debug("Saindo do método delete com sucesso. ID={}", id);
+        } catch (DataAccessException e) {
+            log.error("Erro ao excluir cliente: id={}, erro={}", id, e.getMessage(), e);
+            throw new InternalErrorException("Erro ao acessar o banco de dados", e);
+        }
+    }
+
+    private Cliente buscarClienteOuFalhar(long id) {
+        return repository.findById(id).orElseThrow(() -> {
+            log.warn("Cliente não encontrado: id={}", id);
+            return new NotFoundException("Cliente não encontrado!");
+        });
+    }
+
+    private boolean isBlank(String valor) {
+        return valor == null || valor.isBlank();
     }
 
     @Override

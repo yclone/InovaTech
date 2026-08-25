@@ -281,8 +281,42 @@ Acesse **http://localhost:5001/swagger-ui.html** para:
 
 ### Cliente API
 - **POST** `/clientes` - Criar novo cliente
-- **GET** `/clientes` - Listar todos os clientes
+- **GET** `/clientes` - Listar clientes (lista completa ou página, ver abaixo)
 - **GET** `/clientes/{id}` - Buscar cliente por ID
+- **PUT** `/clientes/{id}` - Atualizar todos os dados do cliente (200 / 400 / 404)
+- **PATCH** `/clientes/{id}` - Atualizar apenas os campos informados (200 / 404)
+- **DELETE** `/clientes/{id}` - Excluir cliente (204 / 404)
+
+#### Paginação, ordenação e filtros em `GET /clientes`
+
+| Query param | Descrição | Exemplo |
+|-------------|-----------|---------|
+| `page` | Número da página (base 0) | `page=0` |
+| `size` | Quantidade de itens por página (default `20`) | `size=10` |
+| `sort` | Ordenação no formato `campo,(asc\|desc)` | `sort=primeiroNome,asc` |
+| `cidade` | Filtro parcial (case-insensitive) por cidade | `cidade=curitiba` |
+| `estado` | Filtro parcial (case-insensitive) por estado | `estado=PR` |
+
+Sem nenhum desses parâmetros, o endpoint mantém o contrato antigo e retorna um **array** com todos os
+clientes. Ao informar qualquer um deles, a resposta passa a ser uma **página**:
+
+```json
+{
+  "content": [
+    { "id": 1, "PrimeiroNome": "João", "UltimoNome": "Silva", "Usuario": "joao.silva@email.com",
+      "Senha": null, "Cidade": "São Paulo", "Estado": "SP" }
+  ],
+  "number": 0,
+  "size": 10,
+  "totalElements": 1,
+  "totalPages": 1
+}
+```
+
+Exemplo: `GET /clientes?page=0&size=10&sort=primeiroNome,asc&cidade=São Paulo&estado=SP`
+
+> A senha nunca é retornada nas respostas (`Senha: null`) e é re-criptografada quando enviada em
+> `PUT`/`PATCH`.
 
 ### Hello API
 - **GET** `/api/hello` - Retorna mensagem de teste
