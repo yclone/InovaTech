@@ -4,6 +4,9 @@ import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
@@ -63,20 +66,94 @@ public class ClienteController {
 
 	@GetMapping("/clientes")
 	@ResponseStatus(HttpStatus.OK)
-	@Operation(summary = "Listar todos os clientes", 
-			   description = "Retorna uma lista com todos os clientes cadastrados no sistema")
+	@Operation(summary = "Listar clientes", 
+			   description = "Retorna todos os clientes cadastrados. Quando informados os parâmetros de "
+					   + "paginação (page, size, sort) ou de filtro (cidade, estado), retorna uma página de clientes")
 	@ApiResponses(value = {
 		@ApiResponse(responseCode = "200", description = "Lista de clientes retornada com sucesso",
 				content = @Content(schema = @Schema(implementation = ClienteDTO.class))),
 		@ApiResponse(responseCode = "500", description = "Erro interno do servidor")
 	})
-	public List<ClienteDTO> getCliente () {
+	public Object getCliente (
+			@Parameter(description = "Número da página (base 0)", example = "0")
+			@RequestParam(value = "page", required = false) Integer page,
+			@Parameter(description = "Quantidade de itens por página", example = "10")
+			@RequestParam(value = "size", required = false) Integer size,
+			@Parameter(description = "Ordenação no formato campo,(asc|desc)", example = "primeiroNome,asc")
+			@RequestParam(value = "sort", required = false) String sort,
+			@Parameter(description = "Filtro parcial por cidade", example = "São Paulo")
+			@RequestParam(value = "cidade", required = false) String cidade,
+			@Parameter(description = "Filtro parcial por estado", example = "SP")
+			@RequestParam(value = "estado", required = false) String estado,
+			@PageableDefault(size = 20) Pageable pageable) {
+
+		boolean paginado = page != null || size != null || sort != null || cidade != null || estado != null;
+
+		if (paginado) {
+			Page<Cliente> pagina = this.service.getList(pageable, cidade, estado);
+			return pagina.map(this::toDtoSemSenha);
+		}
+
 		List<Cliente> clienteList = this.service.getList();
-		return clienteList.stream().map(cliente -> {
-			ClienteDTO dto = modelMapper.map(cliente, ClienteDTO.class);
-			dto.setSenha(null); // Remove a senha da resposta por segurança
-			return dto;
-		}).collect(Collectors.toList());
+		return clienteList.stream().map(this::toDtoSemSenha).collect(Collectors.toList());
+	}
+
+	@PutMapping("/clientes/{id}")
+	@ResponseStatus(HttpStatus.OK)
+	@Operation(summary = "Atualizar cliente", 
+			   description = "Atualiza todos os dados de um cliente existente")
+	@ApiResponses(value = {
+		@ApiResponse(responseCode = "200", description = "Cliente atualizado com sucesso",
+				content = @Content(schema = @Schema(implementation = ClienteDTO.class))),
+		@ApiResponse(responseCode = "400", description = "Dados inválidos fornecidos"),
+		@ApiResponse(responseCode = "404", description = "Cliente não encontrado"),
+		@ApiResponse(responseCode = "500", description = "Erro interno do servidor")
+	})
+	public ClienteDTO updateCliente(
+			@Parameter(description = "ID do cliente a ser atualizado", required = true)
+			@PathVariable long id,
+			@RequestBody @Valid ClienteDTO cliente) {
+		Cliente entity = modelMapper.map(cliente, Cliente.class);
+		return toDtoSemSenha(service.update(id, entity));
+	}
+
+	@PatchMapping("/clientes/{id}")
+	@ResponseStatus(HttpStatus.OK)
+	@Operation(summary = "Atualizar cliente parcialmente", 
+			   description = "Atualiza apenas os campos informados de um cliente existente")
+	@ApiResponses(value = {
+		@ApiResponse(responseCode = "200", description = "Cliente atualizado com sucesso",
+				content = @Content(schema = @Schema(implementation = ClienteDTO.class))),
+		@ApiResponse(responseCode = "404", description = "Cliente não encontrado"),
+		@ApiResponse(responseCode = "500", description = "Erro interno do servidor")
+	})
+	public ClienteDTO partialUpdateCliente(
+			@Parameter(description = "ID do cliente a ser atualizado", required = true)
+			@PathVariable long id,
+			@RequestBody ClienteDTO cliente) {
+		Cliente entity = modelMapper.map(cliente, Cliente.class);
+		return toDtoSemSenha(service.partialUpdate(id, entity));
+	}
+
+	@DeleteMapping("/clientes/{id}")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	@Operation(summary = "Excluir cliente", 
+			   description = "Remove um cliente existente do sistema")
+	@ApiResponses(value = {
+		@ApiResponse(responseCode = "204", description = "Cliente excluído com sucesso"),
+		@ApiResponse(responseCode = "404", description = "Cliente não encontrado"),
+		@ApiResponse(responseCode = "500", description = "Erro interno do servidor")
+	})
+	public void deleteCliente(
+			@Parameter(description = "ID do cliente a ser excluído", required = true)
+			@PathVariable long id) {
+		service.delete(id);
+	}
+
+	private ClienteDTO toDtoSemSenha(Cliente cliente) {
+		ClienteDTO dto = modelMapper.map(cliente, ClienteDTO.class);
+		dto.setSenha(null); // Remove a senha da resposta por segurança
+		return dto;
 	}
 
 

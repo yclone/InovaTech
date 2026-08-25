@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 
 import br.com.InovaTech.InovaTech.exceptions.BusinessException;
 import br.com.InovaTech.InovaTech.exceptions.InternalErrorException;
+import br.com.InovaTech.InovaTech.exceptions.NotFoundException;
 import br.com.InovaTech.InovaTech.model.dto.ApiErrorsDTO;
 
 @RestControllerAdvice
@@ -34,6 +35,12 @@ public class ApplicationExceptionHandler {
     @ExceptionHandler(BusinessException.class)
     public ApiErrorsDTO businessExceptionHandler(BusinessException businessException) {
         return new ApiErrorsDTO(businessException);
+    }
+
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    @ExceptionHandler(NotFoundException.class)
+    public ApiErrorsDTO notFoundExceptionHandler(NotFoundException notFoundException) {
+        return new ApiErrorsDTO(notFoundException);
     }
 
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
